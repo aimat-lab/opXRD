@@ -1,0 +1,11 @@
+name: Tox Tests
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Somerandomguy10111/actions/toxtests@main
+        with:
+          python-version: '3.11'
