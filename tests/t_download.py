@@ -2,7 +2,9 @@ import os.path
 import tempfile
 
 from holytools.devtools import Unittest
+
 from opxrd import OpXRD
+
 
 class TestDownload(Unittest):
     def test_dl(self):

@@ -1,6 +1,6 @@
 ## About
 
-Python API for opXRD database. See more at https://xrd.aimat.science
+Python API for opXRD database. See more under https://xrd.aimat.science
 
 ## Setup
 

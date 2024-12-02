@@ -4,3 +4,6 @@ version = "0.1.0"
 authors = [{name = "Daniel Hollarek", email = "daniel.hollarek@googlemail.com"}]
 description = "Python API for opXRD database. See more at https://xrd.aimat.science/"
 dependencies = ["holytools", "xrdpattern"]
+
+[tool.setuptools.packages.find]
+where = ["opxrd"]
