@@ -32,13 +32,11 @@ class OpXRD(PatternDB):
             raise ValueError(f'Response not ok! {file_response.status_code}')
 
         print(f'- Downloading opXRD database from Zenodo ({zenodo_url})')
-        print(f'- Chunk progress:')
+        print(f'- Chunk progress (Size = 1kB):')
         with open(output_fpath, 'wb') as f:
             for chunk in file_response.iter_content(chunk_size=1024):
                 f.write(chunk)
                 tracked_int.increment(to_add=1)
-            tracked_int.finish()
-
 
     @staticmethod
     def _unzip_file(zip_fpath : str, output_dir : str):
