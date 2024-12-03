@@ -10,13 +10,17 @@ from holytools.userIO import TrackedInt
 class OpXRD(PatternDB):
     @classmethod
     def load(cls, root_dirpath : str, download : bool = True, *args, **kwargs) -> PatternDB:
+        root_dirpath = os.path.expanduser(root_dirpath)
+        root_dirpath = os.path.abspath(root_dirpath)
+
+        if os.path.isdir(root_dirpath) and download:
+            raise ValueError(f'Cannot download to existing directory {root_dirpath}')
+
         if not os.path.isdir(root_dirpath) and download:
             tmp_fpath = tempfile.mktemp(suffix='.zip')
             OpXRD._download_zenodo_opxrd(output_fpath=tmp_fpath)
             OpXRD._unzip_file(tmp_fpath, output_dir=root_dirpath)
 
-        if os.path.isdir(root_dirpath) and download:
-            raise ValueError(f'Cannot download to existing directory {root_dirpath}')
 
         print(f'- Loading patterns from local files')
         return super().load(dirpath=root_dirpath)
