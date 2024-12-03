@@ -13,9 +13,6 @@ class OpXRD(PatternDB):
         root_dirpath = os.path.expanduser(root_dirpath)
         root_dirpath = os.path.abspath(root_dirpath)
 
-        if os.path.isdir(root_dirpath) and download:
-            raise ValueError(f'Cannot download to existing directory {root_dirpath}')
-
         if not os.path.isdir(root_dirpath) and download:
             tmp_fpath = tempfile.mktemp(suffix='.zip')
             OpXRD._download_zenodo_opxrd(output_fpath=tmp_fpath)
