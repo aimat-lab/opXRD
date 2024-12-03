@@ -15,6 +15,9 @@ class OpXRD(PatternDB):
             OpXRD._download_zenodo_opxrd(output_fpath=tmp_fpath)
             OpXRD._unzip_file(tmp_fpath, output_dir=root_dirpath)
 
+        if os.path.isdir(root_dirpath) and download:
+            raise ValueError(f'Cannot download to existing directory {root_dirpath}')
+
         print(f'- Loading patterns from local files')
         return super().load(dirpath=root_dirpath)
 

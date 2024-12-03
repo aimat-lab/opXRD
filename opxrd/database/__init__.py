@@ -1,1 +1,1 @@
-from .database import OpXRD
+from .opxrd import OpXRD
