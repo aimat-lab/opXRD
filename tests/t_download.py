@@ -4,6 +4,7 @@ import tempfile
 from holytools.devtools import Unittest
 
 from opxrd import OpXRD
+from xrdpattern.pattern import XrdPattern
 
 
 class TestLoading(Unittest):
@@ -16,8 +17,18 @@ class TestLoading(Unittest):
         if self.is_manual_mode:
             opxrd.plot_quantity(attr='primary_phase.spacegroup')
 
-        for p in opxrd.patterns:
+
+        for fpath, patterns in opxrd.fpath_dict.items():
+            for p in patterns:
+                self.check_pattern_data(fpath,p)
+
+    @staticmethod
+    def check_pattern_data(fpath: str, p: XrdPattern):
+        try:
             p.get_pattern_data()
+        except Exception as e:
+            print(f'Retriving pattern data failed for pattern at fpath = {fpath}')
+            raise e
 
 if __name__ == "__main__":
     TestLoading.execute_all()
