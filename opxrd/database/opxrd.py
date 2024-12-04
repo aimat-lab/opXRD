@@ -20,7 +20,7 @@ class OpXRD(PatternDB):
 
 
         print(f'- Loading patterns from local files')
-        return super().load(dirpath=root_dirpath)
+        return super().load(dirpath=root_dirpath, strict=True)
 
     @staticmethod
     def _download_zenodo_opxrd(output_fpath : str):

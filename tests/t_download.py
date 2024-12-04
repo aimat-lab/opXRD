@@ -6,13 +6,15 @@ from holytools.devtools import Unittest
 from opxrd import OpXRD
 
 
-class TestDownload(Unittest):
+class TestLoading(Unittest):
     def test_dl(self):
-        dl_dir = tempfile.mktemp()
-        opxrd = OpXRD.load(root_dirpath=dl_dir, download=True)
-        self.assertTrue(os.path.isdir(dl_dir))
-        self.assertTrue(len(opxrd.patterns) > 1)
+        dl_dirpath = tempfile.mktemp()
+        opxrd = OpXRD.load(root_dirpath=dl_dirpath, download=True)
+        self.assertTrue(os.path.isdir(dl_dirpath))
+        self.assertTrue(len(opxrd.patterns) > 10**4)
 
+        if self.is_manual_mode:
+            opxrd.plot_quantity(attr='primary_phase.spacegroup')
 
 if __name__ == "__main__":
-    TestDownload.execute_all()
+    TestLoading.execute_all()
