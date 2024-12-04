@@ -31,10 +31,10 @@ class OpXRD(PatternDB):
         total_size = int(file_response.headers.get('content-length', 0))
         total_chunks = (total_size // 1024) + (1 if total_size % 1024 else 0)
 
-        tracked_int = TrackedInt(start_value=0, finish_value=total_chunks)
         if not file_response.status_code == 200:
-            raise ValueError(f'Response not ok! {file_response.status_code}')
+            raise ValueError(f'Response returned error status code {file_response.status_code}. Reason: {file_response.reason}')
 
+        tracked_int = TrackedInt(start_value=0, finish_value=total_chunks)
         print(f'- Downloading opXRD database from Zenodo ({zenodo_url})')
         print(f'- Chunk progress (Size = 1kB):')
         with open(output_fpath, 'wb') as f:
