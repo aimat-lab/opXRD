@@ -24,9 +24,11 @@ class OpXRD(PatternDB):
 
     @staticmethod
     def _download_zenodo_opxrd(output_fpath : str):
-        zenodo_url = f'https://zenodo.org/api/records/14278656'
-        file_url = f'{zenodo_url}/files/opXRD.zip/content'
-        file_response = requests.get(url=file_url, stream=True)
+        zenodo_url = f'https://zenodo.org/records/14278656'
+        file_url = f'{zenodo_url}/files/opXRD.zip?download=1'
+        file_response = requests.get(url=file_url)
+
+        file_response = requests.get(url=f'https://zenodo.org/records/14278656/files/opxrd.zip?download=1', stream=True)
 
         total_size = int(file_response.headers.get('content-length', 0))
         total_chunks = (total_size // 1024) + (1 if total_size % 1024 else 0)
@@ -44,6 +46,7 @@ class OpXRD(PatternDB):
 
     @staticmethod
     def _unzip_file(zip_fpath : str, output_dir : str):
+        print(f'- Unziping downloaded files to {output_dir}')
         with zipfile.ZipFile(zip_fpath, 'r') as zip_ref:
             zip_ref.extractall(output_dir)
         return f"Files extracted to {output_dir}"
