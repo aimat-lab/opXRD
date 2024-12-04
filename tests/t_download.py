@@ -16,5 +16,8 @@ class TestLoading(Unittest):
         if self.is_manual_mode:
             opxrd.plot_quantity(attr='primary_phase.spacegroup')
 
+        for p in opxrd.patterns:
+            p.get_pattern_data()
+
 if __name__ == "__main__":
     TestLoading.execute_all()

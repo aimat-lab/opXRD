@@ -24,7 +24,7 @@ class OpXRD(PatternDB):
 
     @staticmethod
     def _download_zenodo_opxrd(output_fpath : str):
-        zenodo_url = f'https://zenodo.org/api/records/14254271'
+        zenodo_url = f'https://zenodo.org/api/records/14278656'
         file_url = f'{zenodo_url}/files/opXRD.zip/content'
         file_response = requests.get(url=file_url, stream=True)
 
