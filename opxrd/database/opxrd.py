@@ -16,13 +16,28 @@ class OpXRD(PatternDB):
         root_dirpath = os.path.abspath(root_dirpath)
 
         if not os.path.isdir(root_dirpath) and download:
-            tmp_fpath = tempfile.mktemp(suffix='.zip')
-            OpXRD._download_zenodo_opxrd(output_fpath=tmp_fpath)
-            OpXRD._unzip_file(tmp_fpath, output_dir=root_dirpath)
-
+            cls._prepare_files(root_dirpath=root_dirpath)
 
         print(f'- Loading patterns from local files')
         return super().load(dirpath=root_dirpath, strict=True)
+
+
+    @classmethod
+    def as_database_list(cls, root_dirpath : str, download : bool = True) -> list[PatternDB]:
+        if not os.path.isdir(root_dirpath) and download:
+            cls._prepare_files(root_dirpath=root_dirpath)
+
+        pattern_dbs = []
+        for d in os.listdir(path=root_dirpath):
+            db = PatternDB.load(dirpath=os.path.join(root_dirpath, d), strict=True)
+            pattern_dbs.append(db)
+        return pattern_dbs
+
+    @classmethod
+    def _prepare_files(cls, root_dirpath : str):
+        tmp_fpath = tempfile.mktemp(suffix='.zip')
+        OpXRD._download_zenodo_opxrd(output_fpath=tmp_fpath)
+        OpXRD._unzip_file(tmp_fpath, output_dir=root_dirpath)
 
     @classmethod
     def _download_zenodo_opxrd(cls, output_fpath : str):
@@ -48,7 +63,7 @@ class OpXRD(PatternDB):
         print(f'- Unziping downloaded files to {output_dir}')
         with zipfile.ZipFile(zip_fpath, 'r') as zip_ref:
             zip_ref.extractall(output_dir)
-        return f"Files extracted to {output_dir}"
+        return f"- Files extracted to {output_dir}"
 
     @classmethod
     def get_record_id(cls) -> int:
