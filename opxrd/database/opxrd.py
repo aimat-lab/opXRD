@@ -26,8 +26,8 @@ class OpXRD(PatternDB):
 
     @classmethod
     def _download_zenodo_opxrd(cls, output_fpath : str):
-        zenodo_url = f'https://zenodo.org/records/{cls.get_record_id()}'
-        file_response = requests.get(url=f'{zenodo_url}/files/opxrd.zip?download=1', stream=True)
+        zenodo_url = f'https://zenodo.org/api/records/{cls.get_record_id()}'
+        file_response = requests.get(url=f'{zenodo_url}/files/opxrd.zip/content', stream=True)
 
         total_size = int(file_response.headers.get('content-length', 0))
         total_chunks = (total_size // 1024) + (1 if total_size % 1024 else 0)
