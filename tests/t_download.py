@@ -27,6 +27,20 @@ class TestLoading(Unittest):
                 self.check_pattern_data(fpath,p)
             k.increment()
 
+    def test_as_database_list(self):
+        dl_dirpath = tempfile.mktemp()
+        dbs = OpXRD.as_database_list(root_dirpath=dl_dirpath, download=True)
+        print(f'- Checking database loading')
+        self.assertTrue(os.path.isdir(dl_dirpath))
+        self.assertTrue(len(dbs) > 5)
+
+        print(f'- Checking pattern data ok')
+        k = TrackedInt(start_value=0,finish_value=len(dbs))
+        for db in dbs:
+            for p in db.patterns:
+                self.check_pattern_data(fpath='None',p=p)
+            k.increment()
+
     @staticmethod
     def check_pattern_data(fpath: str, p: XrdPattern):
         try:
