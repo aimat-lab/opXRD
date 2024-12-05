@@ -6,6 +6,8 @@ import requests
 from xrdpattern.pattern import PatternDB
 from holytools.userIO import TrackedInt
 
+# -----------------------------
+
 
 class OpXRD(PatternDB):
     @classmethod
@@ -22,9 +24,9 @@ class OpXRD(PatternDB):
         print(f'- Loading patterns from local files')
         return super().load(dirpath=root_dirpath, strict=True)
 
-    @staticmethod
-    def _download_zenodo_opxrd(output_fpath : str):
-        zenodo_url = f'https://zenodo.org/records/14278656'
+    @classmethod
+    def _download_zenodo_opxrd(cls, output_fpath : str):
+        zenodo_url = f'https://zenodo.org/records/{cls.get_record_id()}'
         file_response = requests.get(url=f'{zenodo_url}/files/opxrd.zip?download=1', stream=True)
 
         total_size = int(file_response.headers.get('content-length', 0))
@@ -48,6 +50,9 @@ class OpXRD(PatternDB):
             zip_ref.extractall(output_dir)
         return f"Files extracted to {output_dir}"
 
+    @classmethod
+    def get_record_id(cls) -> int:
+        return 14279434
 
 if __name__ == "__main__":
     opxrd = OpXRD.load(root_dirpath='../data/opxrd')
