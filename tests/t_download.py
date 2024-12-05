@@ -11,10 +11,10 @@ from xrdpattern.pattern import XrdPattern
 class TestLoading(Unittest):
     def test_dl(self):
         dl_dirpath = tempfile.mktemp()
-        # opxrd = OpXRD.load(root_dirpath=dl_dirpath, download=True)
+        opxrd = OpXRD.load(root_dirpath=dl_dirpath, download=True)
         print(f'- Checking database loading')
-        opxrd = OpXRD.load(root_dirpath='/home/daniel/aimat/data/opXRD/final/')
-        # self.assertTrue(os.path.isdir(dl_dirpath))
+        #opxrd = OpXRD.load(root_dirpath='/home/daniel/aimat/data/opXRD/final/')
+        self.assertTrue(os.path.isdir(dl_dirpath))
         self.assertTrue(len(opxrd.patterns) > 10**4)
 
         # if self.is_manual_mode:
