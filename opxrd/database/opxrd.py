@@ -1,5 +1,6 @@
 import os.path
 import tempfile
+import time
 import zipfile
 
 import requests
@@ -30,8 +31,11 @@ class OpXRD(PatternDB):
         pattern_dbs = []
         for d in os.listdir(path=root_dirpath):
             dirpath = os.path.join(root_dirpath, d)
+            print(f' - Loading database {d}')
+            time.sleep(0.01)
             db = PatternDB.load(dirpath=dirpath, strict=True)
             db.name = d
+
             pattern_dbs.append(db)
         return pattern_dbs
 
@@ -54,6 +58,7 @@ class OpXRD(PatternDB):
 
         print(f'- Downloading opXRD database from Zenodo ({zenodo_url})')
         print(f'- Download chunk progress (Chunk size = 1kB):')
+        time.sleep(0.01)
         tracked_int = TrackedInt(start_value=0, finish_value=total_chunks)
         with open(output_fpath, 'wb') as f:
             for chunk in file_response.iter_content(chunk_size=1024):

@@ -1,5 +1,6 @@
 import os.path
 import tempfile
+import time
 
 from holytools.devtools import Unittest
 from holytools.userIO import TrackedInt
@@ -35,11 +36,12 @@ class TestLoading(Unittest):
         self.assertTrue(len(dbs) > 5)
 
         print(f'- Checking pattern data ok')
-        k = TrackedInt(start_value=0,finish_value=len(dbs))
+        total_num_patterns = sum([len(db.patterns) for db in dbs])
+        k = TrackedInt(start_value=0,finish_value=total_num_patterns)
         for db in dbs:
             for p in db.patterns:
                 self.check_pattern_data(fpath='None',p=p)
-            k.increment()
+                k.increment()
 
     @staticmethod
     def check_pattern_data(fpath: str, p: XrdPattern):
