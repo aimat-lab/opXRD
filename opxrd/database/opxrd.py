@@ -69,7 +69,7 @@ class OpXRD(PatternDB):
 
     @classmethod
     def get_record_id(cls) -> int:
-        return 14279434
+        return 14289287
 
 if __name__ == "__main__":
     opxrd = OpXRD.load(root_dirpath='../data/opxrd')
