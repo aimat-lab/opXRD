@@ -29,9 +29,9 @@ class OpXRD(PatternDB):
             cls._prepare_files(root_dirpath=root_dirpath)
 
         pattern_dbs = []
+        print(f'- Loading databases from {root_dirpath}')
         for d in os.listdir(path=root_dirpath):
             dirpath = os.path.join(root_dirpath, d)
-            print(f' - Loading database {d}')
             time.sleep(0.01)
             db = PatternDB.load(dirpath=dirpath, strict=True)
             db.name = d
