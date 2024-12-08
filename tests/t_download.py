@@ -1,10 +1,8 @@
 import os.path
 import tempfile
-import time
 
 from holytools.devtools import Unittest
 from holytools.userIO import TrackedInt
-
 from opxrd import OpXRD
 from xrdpattern.pattern import XrdPattern
 

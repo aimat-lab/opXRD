@@ -47,10 +47,14 @@ class OpXRD(PatternDB):
         OpXRD._download_zenodo_opxrd(output_fpath=tmp_fpath)
         OpXRD._unzip_file(tmp_fpath, output_dir=root_dirpath)
 
+
     @classmethod
     def _download_zenodo_opxrd(cls, output_fpath : str):
-        zenodo_url = f'https://zenodo.org/api/records/{cls.get_record_id()}'
-        file_response = requests.get(url=f'{zenodo_url}/files/opxrd.zip/content', stream=True)
+        try:
+            zenodo_url = f'https://zenodo.org/api/records/{cls.get_latest_record_id()}'
+            file_response = requests.get(url=f'{zenodo_url}/files/opxrd.zip/content', stream=True)
+        except Exception as e:
+            raise ConnectionError(f'Failed to download opXRD database from Zenodo. Reason: {e.__repr__()}')
 
         total_size = int(file_response.headers.get('content-length', 0))
         total_chunks = (total_size // 1024) + (1 if total_size % 1024 else 0)
@@ -75,8 +79,16 @@ class OpXRD(PatternDB):
         return f"- Files extracted to {output_dir}"
 
     @classmethod
-    def get_record_id(cls) -> int:
-        return 14289287
+    def get_latest_record_id(cls) -> int:
+        response = requests.get(url=f'https://zenodo.org/recaords/14254270')
+        url = response.links['linkset']['url']
+        record_id = int(url.split('/')[-1])
+        print(f'record_id = {record_id}')
+        return record_id
+
+
 
 if __name__ == "__main__":
-    opxrd = OpXRD.load(root_dirpath='../data/opxrd')
+    # opxrd = OpXRD.load(root_dirpath='../data/opxrd')
+    # print(f'record id = {OpXRD.get_latest_record_id()}')
+    OpXRD._prepare_files(root_dirpath='/tmp/opxrd')
