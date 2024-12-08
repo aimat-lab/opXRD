@@ -33,7 +33,9 @@ class OpXRD(PatternDB):
         for d in os.listdir(path=root_dirpath):
             dirpath = os.path.join(root_dirpath, d)
             time.sleep(0.01)
-            db = PatternDB.load(dirpath=dirpath, strict=True)
+            #TODO: This is temporary
+            db = PatternDB.load(dirpath=dirpath, strict=False)
+            #db = PatternDB.load(dirpath=dirpath, strict=True)
             db.name = d
 
             pattern_dbs.append(db)
