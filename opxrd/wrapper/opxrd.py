@@ -80,7 +80,7 @@ class OpXRD(PatternDB):
 
     @classmethod
     def get_latest_record_id(cls) -> int:
-        response = requests.get(url=f'https://zenodo.org/recaords/14254270')
+        response = requests.get(url=f'https://zenodo.org/records/14254270')
         url = response.links['linkset']['url']
         record_id = int(url.split('/')[-1])
         print(f'record_id = {record_id}')
