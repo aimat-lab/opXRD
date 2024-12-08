@@ -84,6 +84,22 @@ class OpXRD(PatternDB):
         return record_id
 
 
+    @staticmethod
+    def merge_databases(dbs : list[PatternDB], common_prefix_length : int = 4) -> list[PatternDB]:
+        db_groups = {}
+        for db in dbs:
+            three_letter_name = db.name[:common_prefix_length]
+            if not three_letter_name in db_groups:
+                db_groups[three_letter_name] = [db]
+            else:
+                db_groups[three_letter_name].append(db)
+
+        merged_dbs = []
+        for name, g in db_groups.items():
+            merged = PatternDB.merge(dbs=g)
+            merged.name = name
+            merged_dbs.append(merged)
+        return merged_dbs
 
 
 if __name__ == "__main__":
