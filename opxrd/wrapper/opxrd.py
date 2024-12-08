@@ -85,6 +85,7 @@ class OpXRD(PatternDB):
 
 
 
+
 if __name__ == "__main__":
     # opxrd = OpXRD.load(root_dirpath='../data/opxrd')
     # print(f'record id = {OpXRD.get_latest_record_id()}')
