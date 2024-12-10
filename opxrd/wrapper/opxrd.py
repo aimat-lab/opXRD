@@ -12,19 +12,19 @@ from holytools.userIO import TrackedInt
 
 class OpXRD(PatternDB):
     @classmethod
-    def load(cls, root_dirpath : str, download : bool = True, *args, **kwargs) -> PatternDB:
+    def load(cls, root_dirpath : str, download : bool = True, download_in_situ : bool = False, *args, **kwargs) -> PatternDB:
         root_dirpath = os.path.expanduser(root_dirpath)
         root_dirpath = os.path.abspath(root_dirpath)
 
         if not os.path.isdir(root_dirpath) and download:
-            cls._prepare_files(root_dirpath=root_dirpath)
+            cls._prepare_files(root_dirpath=root_dirpath, include_in_situ=download_in_situ)
 
         print(f'- Loading patterns from local files')
         return super().load(dirpath=root_dirpath, strict=True)
 
 
     @classmethod
-    def as_database_list(cls, root_dirpath : str, download : bool = True) -> list[PatternDB]:
+    def as_database_list(cls, root_dirpath : str, download : bool = True, download_in_situ : bool = False) -> list[PatternDB]:
         if not os.path.isdir(root_dirpath) and download:
             cls._prepare_files(root_dirpath=root_dirpath)
 
@@ -40,17 +40,20 @@ class OpXRD(PatternDB):
         return pattern_dbs
 
     @classmethod
-    def _prepare_files(cls, root_dirpath : str):
+    def _prepare_files(cls, root_dirpath : str, include_in_situ : bool = False):
         tmp_fpath = tempfile.mktemp(suffix='.zip')
         OpXRD._download_zenodo_opxrd(output_fpath=tmp_fpath)
         OpXRD._unzip_file(tmp_fpath, output_dir=root_dirpath)
+        if include_in_situ:
+            cls._download_zenodo_opxrd(output_fpath=tmp_fpath, filename='opxrd_in_situ.zip')
+            cls._unzip_file(tmp_fpath, output_dir=root_dirpath)
 
 
     @classmethod
-    def _download_zenodo_opxrd(cls, output_fpath : str):
+    def _download_zenodo_opxrd(cls, output_fpath : str, filename : str = 'opxrd.zip'):
         try:
             zenodo_url = f'https://zenodo.org/api/records/{cls.get_latest_record_id()}'
-            file_response = requests.get(url=f'{zenodo_url}/files/opxrd.zip/content', stream=True)
+            file_response = requests.get(url=f'{zenodo_url}/files/{filename}/content', stream=True)
         except Exception as e:
             raise ConnectionError(f'Failed to download opXRD database from Zenodo. Reason: {e.__repr__()}')
 
