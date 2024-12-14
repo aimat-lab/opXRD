@@ -7,20 +7,22 @@ import requests
 from xrdpattern.pattern import PatternDB
 from holytools.userIO import TrackedInt
 
+from xrdpattern.pattern.db import patterdb_logger
+
 # -----------------------------
 
 
 class OpXRD(PatternDB):
     @classmethod
-    def load(cls, root_dirpath : str, download : bool = True, download_in_situ : bool = False, *args, **kwargs) -> PatternDB:
-        root_dirpath = os.path.expanduser(root_dirpath)
-        root_dirpath = os.path.abspath(root_dirpath)
+    def load(cls, dirpath : str, download : bool = True, download_in_situ : bool = False, *args, **kwargs) -> PatternDB:
+        dirpath = os.path.expanduser(dirpath)
+        dirpath = os.path.abspath(dirpath)
 
-        if not os.path.isdir(root_dirpath) and download:
-            cls._prepare_files(root_dirpath=root_dirpath, include_in_situ=download_in_situ)
+        if not os.path.isdir(dirpath) and download:
+            cls._prepare_files(root_dirpath=dirpath, include_in_situ=download_in_situ)
 
-        print(f'- Loading patterns from local files')
-        return super().load(dirpath=root_dirpath, strict=True)
+
+        return super().load(dirpath=dirpath, strict=True)
 
 
     @classmethod
@@ -106,6 +108,7 @@ class OpXRD(PatternDB):
 
 
 if __name__ == "__main__":
+    pass
     # opxrd = OpXRD.load(root_dirpath='../data/opxrd')
     # print(f'record id = {OpXRD.get_latest_record_id()}')
-    OpXRD._prepare_files(root_dirpath='/tmp/opxrd')
+    # OpXRD._prepare_files(root_dirpath='/tmp/opxrd')

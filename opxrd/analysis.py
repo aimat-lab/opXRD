@@ -19,18 +19,9 @@ class DatabaseAnalyser:
         self.output_dirpath : str = output_dirpath
         os.makedirs(self.output_dirpath, exist_ok=True)
 
-    @staticmethod
-    def plot_in_single(patterns : list[XrdPattern]):
-        data = [p.get_pattern_data() for p in patterns]
-        fig, ax = plt.subplots()
-        for x, y in data:
-            ax.plot(x, y, linewidth=0.1)
-
-        ax.set_xlabel('X Label')
-        ax.set_ylabel('Y Label')
-        ax.set_title('Multiple XY Plots')
-        plt.show()
-
+    def plot_databases_in_single(self):
+        for database in self.databases:
+            database.show_all(single_plot=True)
 
     def plot_fourier(self, x, y, max_freq=10):
         N = len(y)  # Number of sample points
@@ -128,10 +119,6 @@ class DatabaseAnalyser:
 if __name__ == "__main__":
     test_dirpath = '/tmp/opxrd_test'
     full_dirpath = '/tmp/opxrd'
-
-    opxrd_databases = OpXRD.as_database_list(root_dirpath=full_dirpath)
+    opxrd_databases = OpXRD.as_database_list(root_dirpath=test_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
-
-    opxrd= OpXRD.load(root_dirpath=test_dirpath)
-    opxrd.show_histograms(save_fpath=f'/tmp/quantities_hist.png',attach_colorbar=False)
-
+    analyser.plot_databases_in_single()
