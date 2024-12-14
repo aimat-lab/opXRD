@@ -88,11 +88,11 @@ class DatabaseAnalyser:
             standardized_intensities = [p.get_pattern_data()[1] for p in db.patterns]
             pca = PCA(n_components=max_components)
             db_pca_coords = pca.fit_transform(standardized_intensities)
+            #
+            # self._plot_reconstructed(pca, example_xy_list=[p.get_pattern_data() for p in db.patterns[:20]],
+            #                          example_pca_coords=db_pca_coords[:20], title=db.name)
 
-            self._plot_reconstructed(pca, example_xy_list=[p.get_pattern_data() for p in db.patterns[:20]],
-                                     example_pca_coords=db_pca_coords[:20], title=db.name)
-
-            plot_components = 10
+            plot_components = min(200, max_components)
             accuracies = []
             x = np.linspace(0,plot_components/max_components, num=plot_components)
             for n_comp in range(plot_components):
@@ -224,7 +224,11 @@ if __name__ == "__main__":
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
     analyser.plot_effective_components()
 
+    # analyser.plot_fourier()
+    # analyser.plot_databases_in_single()
+    # analyser.plot_effective_components()
+
     # analyser.plot_databases_in_single()
     # analyser.compute_effective_components()
-    # analyser.plot_fourier()
+
     # analyser.print_total_counts()
