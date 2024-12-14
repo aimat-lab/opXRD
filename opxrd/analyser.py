@@ -21,7 +21,7 @@ class DatabaseAnalyser:
 
     def plot_databases_in_single(self):
         for database in self.databases:
-            database.show_all(single_plot=True)
+            database.show_all(single_plot=True, limit_patterns=10)
 
     def plot_fourier(self, x, y, max_freq=10):
         N = len(y)  # Number of sample points
@@ -118,7 +118,7 @@ class DatabaseAnalyser:
 
 if __name__ == "__main__":
     test_dirpath = '/tmp/opxrd_test'
-    full_dirpath = '/tmp/opxrd'
-    opxrd_databases = OpXRD.as_database_list(root_dirpath=test_dirpath)
+    full_dirpath = '/home/daniel/aimat/data/opXRD/final/'
+    opxrd_databases = OpXRD.as_database_list(root_dirpath=full_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
     analyser.plot_databases_in_single()
