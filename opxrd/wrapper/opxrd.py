@@ -21,7 +21,6 @@ class OpXRD(PatternDB):
         if not os.path.isdir(dirpath) and download:
             cls._prepare_files(root_dirpath=dirpath, include_in_situ=download_in_situ)
 
-
         return super().load(dirpath=dirpath, strict=True)
 
 
@@ -65,8 +64,8 @@ class OpXRD(PatternDB):
         if not file_response.status_code == 200:
             raise ValueError(f'Response returned error status code {file_response.status_code}. Reason: {file_response.reason}')
 
-        print(f'- Downloading opXRD database from Zenodo ({zenodo_url})')
-        print(f'- Download chunk progress (Chunk size = 1kB):')
+        patterdb_logger.info(f'Downloading opXRD database from Zenodo ({zenodo_url})')
+        patterdb_logger.info(f'Download chunk progress (Chunk size = 1kB):')
         time.sleep(0.01)
         tracked_int = TrackedInt(start_value=0, finish_value=total_chunks)
         with open(output_fpath, 'wb') as f:
