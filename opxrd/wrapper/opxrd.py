@@ -26,7 +26,7 @@ class OpXRD(PatternDB):
     @classmethod
     def as_database_list(cls, root_dirpath : str, download : bool = True, download_in_situ : bool = False) -> list[PatternDB]:
         if not os.path.isdir(root_dirpath) and download:
-            cls._prepare_files(root_dirpath=root_dirpath)
+            cls._prepare_files(root_dirpath=root_dirpath, include_in_situ=download_in_situ)
 
         pattern_dbs = []
         print(f'- Loading databases from {root_dirpath}')
