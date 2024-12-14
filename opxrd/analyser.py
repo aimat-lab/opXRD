@@ -1,7 +1,9 @@
 import os
+import random
 
 import numpy as np
 from matplotlib.axes import Axes
+from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 from xrdpattern.pattern import PatternDB
 from xrdpattern.pattern import XrdPattern
@@ -18,6 +20,8 @@ class DatabaseAnalyser:
         self.joined_db : PatternDB = PatternDB.merge(databases)
         self.output_dirpath : str = output_dirpath
         os.makedirs(self.output_dirpath, exist_ok=True)
+
+        random.seed(42)
 
     def plot_databases_in_single(self):
         for database in self.databases:
@@ -44,13 +48,12 @@ class DatabaseAnalyser:
 
     def plot_pattern_dbs(self, title : str):
         combined_pattern_list = self.get_all_patterns()
-        xy_list = [p.get_pattern_data() for p in combined_pattern_list]
-        combined_y_list = [y for x, y in xy_list]
+        combined_intensities_list = [p.get_pattern_data()[1] for p in combined_pattern_list]
 
         pca = PCA(n_components=2)
-        transformed_data = pca.fit_transform(combined_y_list)
+        transformed_data = pca.fit_transform(combined_intensities_list)
 
-        rand_indices = [np.random.randint(low=0, high=len(combined_y_list)) for _ in range(10)]
+        rand_indices = [np.random.randint(low=0, high=len(combined_intensities_list)) for _ in range(10)]
         example_xy_list = [combined_pattern_list[idx].get_pattern_data() for idx in rand_indices]
         example_pca_coords =  [transformed_data[idx] for idx in rand_indices]
 
@@ -116,9 +119,41 @@ class DatabaseAnalyser:
         return self.joined_db.patterns
 
 
+    def compute_effective_components(self, tolerance : float = 0.10):
+        for db in self.databases:
+            max_components = len(db.patterns)
+            standardized_intensities = [p.get_pattern_data()[1] for p in db.patterns]
+            pca = PCA(n_components=max_components)
+            pca_coords = pca.fit_transform(standardized_intensities)
+
+            self._plot_reconstructed(pca, example_xy_list=[p.get_pattern_data() for p in db.patterns[:20]],
+                                     example_pca_coords=pca_coords[:20], title=db.name)
+
+            for n_comp in range(max_components):
+                mismatches = []
+                for j, p in enumerate(db.patterns):
+                    _, i1 = p.get_pattern_data()
+                    i2 = pca.inverse_transform(pca_coords[j])
+                    mismatch = self.compute_mismatch(i1, i2)
+                    mismatches.append(mismatch)
+                avg_mismatch  = np.mean(mismatches)
+                if avg_mismatch < tolerance:
+                    print(f'Database {db.name} has {n_comp} effective components')
+                    break
+
+
+    @staticmethod
+    def compute_mismatch(i1 : NDArray, i2 : NDArray) -> float:
+        norm_original = np.linalg.norm(i1) / len(i1)
+        delta_norm = np.linalg.norm(i1 - i2)/len(i1)
+        mismatch = delta_norm / norm_original
+        return mismatch
+
+
 if __name__ == "__main__":
     test_dirpath = '/tmp/opxrd_test'
     full_dirpath = '/home/daniel/aimat/data/opXRD/final/'
-    opxrd_databases = OpXRD.as_database_list(root_dirpath=full_dirpath)
+    opxrd_databases = OpXRD.as_database_list(root_dirpath=test_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
-    analyser.plot_databases_in_single()
+    # analyser.plot_databases_in_single()
+    analyser.compute_effective_components()
