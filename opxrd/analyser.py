@@ -43,7 +43,7 @@ class DatabaseAnalyser:
 
     def plot_in_single(self, limit_patterns : int = 10**6):
         for database in self.databases:
-            save_fpath = os.path.join(self.output_dirpath, f'{database.name}_pattern_multiplot_patterns_{limit_patterns}.png')
+            save_fpath = os.path.join(self.output_dirpath, f'{database.name}_pattern_multiplot.png')
             database.show_all(single_plot=True, limit_patterns=limit_patterns, save_fpath=save_fpath)
 
     def plot_fourier(self, max_freq=2):
@@ -247,7 +247,6 @@ class DatabaseAnalyser:
 if __name__ == "__main__":
     test_dirpath = '/home/daniel/aimat/data/opXRD/test'
     full_dirpath = '/home/daniel/aimat/data/opXRD/final'
-    opxrd_databases = OpXRD.load_project_list(root_dirpath=test_dirpath)
+    opxrd_databases = OpXRD.load_project_list(root_dirpath=full_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
-    # analyser.run_all()
-    analyser.plot_in_single()
+    analyser.run_all()
