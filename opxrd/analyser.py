@@ -115,7 +115,10 @@ class DatabaseAnalyser:
                 reconstructions = pca.inverse_transform(zero_padded_comp)
                 for i1, i2 in zip(standardized_intensities, reconstructions):
                     mismatch = self.compute_mismatch(i1, i2)
-                    mismatches.append(mismatch)
+                    if not np.isinf(mismatch):
+                        mismatches.append(mismatch)
+                    else:
+                        print('inf mismatch')
 
                 mismatch  = np.mean(mismatches)
                 accuracies.append(mismatch)
@@ -204,6 +207,7 @@ class DatabaseAnalyser:
         norm_original = np.linalg.norm(i1) / len(i1)
         delta_norm = np.linalg.norm(i1 - i2)/len(i1)
         mismatch = delta_norm / norm_original
+
         return mismatch
 
     def show_label_fractions(self):
@@ -238,4 +242,5 @@ if __name__ == "__main__":
     full_dirpath = '/home/daniel/aimat/data/opXRD/final'
     opxrd_databases = OpXRD.as_database_list(root_dirpath=full_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
-    analyser.run_all()
+    analyser.plot_effective_components()
+    # analyser.run_all()
