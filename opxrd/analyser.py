@@ -247,6 +247,6 @@ class DatabaseAnalyser:
 if __name__ == "__main__":
     test_dirpath = '/home/daniel/aimat/data/opXRD/test'
     full_dirpath = '/home/daniel/aimat/data/opXRD/final'
-    opxrd_databases = OpXRD.as_database_list(root_dirpath=full_dirpath)
+    opxrd_databases = OpXRD.load_project_list(root_dirpath=full_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
     analyser.run_all()

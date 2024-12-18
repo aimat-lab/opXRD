@@ -25,7 +25,7 @@ class OpXRD(PatternDB):
 
 
     @classmethod
-    def as_database_list(cls, root_dirpath : str, download : bool = True, download_in_situ : bool = False) -> list[PatternDB]:
+    def load_project_list(cls, root_dirpath : str, download : bool = True, download_in_situ : bool = False) -> list[PatternDB]:
         if not os.path.isdir(root_dirpath) and download:
             cls._prepare_files(root_dirpath=root_dirpath, include_in_situ=download_in_situ)
 
@@ -33,10 +33,12 @@ class OpXRD(PatternDB):
         print(f'- Loading databases from {root_dirpath}')
         dirpaths = [f.path for f in os.scandir(root_dirpath) if f.is_dir()]
         for d in dirpaths:
-            time.sleep(0.01)
-            db = PatternDB.load(dirpath=d, strict=True)
-
-            pattern_dbs.append(db)
+            if os.path.isdir(d):
+                pattern_dbs += cls.load_project_list(root_dirpath=d, download=False)
+            else:
+                time.sleep(0.01)
+                db = PatternDB.load(dirpath=d, strict=True)
+                pattern_dbs.append(db)
         return pattern_dbs
 
     @classmethod
@@ -106,7 +108,5 @@ class OpXRD(PatternDB):
 
 
 if __name__ == "__main__":
-    pass
-    # opxrd = OpXRD.load(root_dirpath='../data/opxrd')
-    # print(f'record id = {OpXRD.get_latest_record_id()}')
-    # OpXRD._prepare_files(root_dirpath='/tmp/opxrd')
+    test_dirpath = '/home/daniel/aimat/data/opXRD/test'
+    dbs = OpXRD.load_project_list(root_dirpath=test_dirpath)
