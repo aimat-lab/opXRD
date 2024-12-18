@@ -87,16 +87,19 @@ class DatabaseAnalyser:
         print('done')
 
     def plot_effective_components(self):
-        for db in self.databases:
+        markers = ['o','s','^','v','D','p','*','+','x']
+
+        for db_num, db in enumerate(self.databases):
             max_components = len(db.patterns)
             standardized_intensities = [p.get_pattern_data()[1] for p in db.patterns]
             pca = PCA(n_components=max_components)
             db_pca_coords = pca.fit_transform(standardized_intensities)
 
-            plot_components = min(10, max_components)
             accuracies = []
-            x = np.linspace(0,plot_components/max_components, num=plot_components)
-            for n_comp in range(plot_components):
+            num_datpoints = min(20, max_components)
+            x = np.linspace(0,1, num=num_datpoints)
+            for frac in x:
+                n_comp = int(frac * max_components)
                 mismatches = []
                 limited_pca = db_pca_coords[:,:n_comp]
                 zero_padded_comp = np.pad(limited_pca, ((0, 0), (0, max_components - n_comp)))
@@ -109,11 +112,11 @@ class DatabaseAnalyser:
                 accuracies.append(mismatch)
                 print(f'Computed accuracy for {db.name} with {n_comp} components = {mismatch}')
 
-            plt.plot(x,accuracies, label=db.name)
+            plt.plot(x,accuracies, label=db.name, marker=markers[db_num])
 
         plt.xlabel(f'Fraction of maximum components')
-        plt.ylabel(f'Average relative mismatch $/lange \delta /rangle$')
-        plt.legend(loc='lower right')
+        plt.ylabel(f'Average relative mismatch $\overline{{\Delta}}$')
+        plt.legend(loc='upper right')
 
         plt.show()
 
@@ -222,9 +225,9 @@ class DatabaseAnalyser:
 
 
 if __name__ == "__main__":
-    test_dirpath = '/tmp/opxrd_test'
-    full_dirpath = '/home/daniel/aimat/data/opXRD/test'
-    opxrd_databases = OpXRD.as_database_list(root_dirpath=test_dirpath)
+    test_dirpath = '/home/daniel/aimat/data/opXRD/test'
+    full_dirpath = '/home/daniel/aimat/data/opXRD/final'
+    opxrd_databases = OpXRD.as_database_list(root_dirpath=full_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
     analyser.plot_effective_components()
 
