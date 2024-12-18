@@ -31,9 +31,18 @@ class DatabaseAnalyser:
 
         random.seed(42)
 
-    def plot_databases_in_single(self):
+    def run_all(self):
+        self.plot_databases_in_single(n_patterns=10)
+        self.plot_fourier(max_freq=2)
+        self.plot_pca_scatter()
+        self.plot_effective_components()
+
+        self.show_label_fractions()
+        self.print_total_counts()
+
+    def plot_databases_in_single(self, n_patterns : int):
         for database in self.databases:
-            database.show_all(single_plot=True, limit_patterns=10)
+            database.show_all(single_plot=True, limit_patterns=n_patterns)
 
     def plot_fourier(self, max_freq=2):
         for db in self.databases:
@@ -70,7 +79,7 @@ class DatabaseAnalyser:
 
             plt.show()
 
-    def plot_pattern_dbs(self, title : str):
+    def plot_pca_scatter(self):
         combined_pattern_list = self.get_all_patterns()
         combined_intensities_list = [p.get_pattern_data()[1] for p in combined_pattern_list]
 
@@ -81,9 +90,9 @@ class DatabaseAnalyser:
         example_xy_list = [combined_pattern_list[idx].get_pattern_data() for idx in rand_indices]
         example_pca_coords =  [transformed_data[idx] for idx in rand_indices]
 
-        self._plot_pca_scatter(transformed_data, title=title)
-        self._plot_pca_basis(pca, title=title)
-        self._plot_reconstructed(pca, example_xy_list, example_pca_coords, title=title)
+        self._plot_pca_scatter(transformed_data, title=f'Two component scatter plot for combined Databases')
+        self._plot_pca_basis(pca, title=f'PCA basis')
+        self._plot_reconstructed(pca, example_xy_list, example_pca_coords, title=f'PCA-reconstructed patterns')
         print('done')
 
     def plot_effective_components(self):
@@ -229,6 +238,4 @@ if __name__ == "__main__":
     full_dirpath = '/home/daniel/aimat/data/opXRD/final'
     opxrd_databases = OpXRD.as_database_list(root_dirpath=full_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
-    analyser.plot_effective_components()
-
-    print(profiler.make_report())
+    analyser.run_all()
