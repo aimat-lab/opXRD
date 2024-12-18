@@ -10,7 +10,7 @@ from xrdpattern.pattern import XrdPattern
 class TestLoading(Unittest):
     def test_dl(self):
         dl_dirpath = tempfile.mktemp()
-        opxrd = OpXRD.load(dirpath=dl_dirpath, download=True)
+        opxrd = OpXRD.load(dirpath=dl_dirpath, download=True, download_in_situ=True)
         print(f'- Checking database loading')
         #opxrd = OpXRD.load(root_dirpath='/home/daniel/aimat/data/opXRD/final/')
         self.assertTrue(os.path.isdir(dl_dirpath))
@@ -28,7 +28,7 @@ class TestLoading(Unittest):
 
     def test_as_database_list(self):
         dl_dirpath = tempfile.mktemp()
-        dbs = OpXRD.as_database_list(root_dirpath=dl_dirpath, download=True)
+        dbs = OpXRD.as_database_list(root_dirpath=dl_dirpath, download=True, download_in_situ=True)
         print(f'- Checking database loading')
         self.assertTrue(os.path.isdir(dl_dirpath))
         self.assertTrue(len(dbs) > 5)

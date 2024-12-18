@@ -154,6 +154,10 @@ class DatabaseAnalyser:
             num_datpoints = min(20, max_components)
             x = np.linspace(0,1, num=num_datpoints)
             for frac in x:
+                if frac == 0:
+                    accuracies.append(1)
+                    continue
+
                 n_comp = int(frac * max_components)
                 mismatches = []
                 limited_pca = db_pca_coords[:,:n_comp]
@@ -175,7 +179,7 @@ class DatabaseAnalyser:
         plt.xlabel(f'Fraction of maximum components')
         plt.ylabel(f'Average relative mismatch $\overline{{\Delta}}$')
         plt.legend(loc='upper right')
-        plt.savefig(os.path.join(self.output_dirpath, f'effective_components.png'))
+        plt.savefig(os.path.join(self.output_dirpath, f'ALL_effective_components.png'))
 
         plt.show()
 
@@ -243,6 +247,6 @@ class DatabaseAnalyser:
 if __name__ == "__main__":
     test_dirpath = '/home/daniel/aimat/data/opXRD/test'
     full_dirpath = '/home/daniel/aimat/data/opXRD/final'
-    opxrd_databases = OpXRD.as_database_list(root_dirpath=test_dirpath)
+    opxrd_databases = OpXRD.as_database_list(root_dirpath=full_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
     analyser.run_all()
