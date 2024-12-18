@@ -14,6 +14,10 @@ from matplotlib import pyplot as plt
 from opxrd import OpXRD
 from xrdpattern.xrd import LabelType
 
+from holytools.devtools import Profiler
+
+profiler = Profiler()
+
 # ----------------------------------------------------------
 
 class DatabaseAnalyser:
@@ -88,28 +92,28 @@ class DatabaseAnalyser:
             standardized_intensities = [p.get_pattern_data()[1] for p in db.patterns]
             pca = PCA(n_components=max_components)
             db_pca_coords = pca.fit_transform(standardized_intensities)
-            #
-            # self._plot_reconstructed(pca, example_xy_list=[p.get_pattern_data() for p in db.patterns[:20]],
-            #                          example_pca_coords=db_pca_coords[:20], title=db.name)
 
-            plot_components = min(200, max_components)
+            plot_components = min(10, max_components)
             accuracies = []
             x = np.linspace(0,plot_components/max_components, num=plot_components)
             for n_comp in range(plot_components):
                 mismatches = []
-                for j, p in enumerate(db.patterns):
-                    _, i1 = p.get_pattern_data()
-                    limited_pca = db_pca_coords[j][:n_comp]
-                    zero_padded_comp = np.pad(limited_pca, (0, max_components - n_comp))
-                    i2 = pca.inverse_transform(zero_padded_comp)
+                limited_pca = db_pca_coords[:,:n_comp]
+                zero_padded_comp = np.pad(limited_pca, ((0, 0), (0, max_components - n_comp)))
+                reconstructions = pca.inverse_transform(zero_padded_comp)
+                for i1, i2 in zip(standardized_intensities, reconstructions):
                     mismatch = self.compute_mismatch(i1, i2)
                     mismatches.append(mismatch)
-                accuracy  = 1-np.mean(mismatches)
-                accuracies.append(accuracy)
-                print(f'Computed accuracy for {db.name} with {n_comp} components = {accuracy}')
 
-            plt.plot(x,accuracies)
-            plt.title(f'Accuracy vs fraction of max components for {db.name}')
+                mismatch  = np.mean(mismatches)
+                accuracies.append(mismatch)
+                print(f'Computed accuracy for {db.name} with {n_comp} components = {mismatch}')
+
+            plt.plot(x,accuracies, label=db.name)
+
+        plt.xlabel(f'Fraction of maximum components')
+        plt.ylabel(f'Average relative mismatch $/lange \delta /rangle$')
+        plt.legend(loc='lower right')
 
         plt.show()
 
@@ -219,16 +223,9 @@ class DatabaseAnalyser:
 
 if __name__ == "__main__":
     test_dirpath = '/tmp/opxrd_test'
-    full_dirpath = '/home/daniel/aimat/data/opXRD/final/'
+    full_dirpath = '/home/daniel/aimat/data/opXRD/test'
     opxrd_databases = OpXRD.as_database_list(root_dirpath=test_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
     analyser.plot_effective_components()
 
-    # analyser.plot_fourier()
-    # analyser.plot_databases_in_single()
-    # analyser.plot_effective_components()
-
-    # analyser.plot_databases_in_single()
-    # analyser.compute_effective_components()
-
-    # analyser.print_total_counts()
+    print(profiler.make_report())
