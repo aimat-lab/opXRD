@@ -10,7 +10,7 @@ Kivy-Garden
 packaging
 pillow
 Pygments
-pyinstaller==5.0
+pyinstaller==5.13.1
 pyinstaller-hooks-contrib
 python-intervals
 requests
