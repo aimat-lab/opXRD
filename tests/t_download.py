@@ -37,6 +37,7 @@ class TestLoading(Unittest):
         total_num_patterns = sum([len(db.patterns) for db in dbs])
         k = TrackedInt(start_value=0,finish_value=total_num_patterns)
         for db in dbs:
+            self.assertTrue(len(db.patterns) > 10**1)
             for p in db.patterns:
                 self.check_pattern_data(fpath='None',p=p)
                 k.increment()
