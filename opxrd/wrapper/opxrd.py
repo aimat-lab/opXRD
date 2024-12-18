@@ -33,12 +33,16 @@ class OpXRD(PatternDB):
         print(f'- Loading databases from {root_dirpath}')
         dirpaths = [f.path for f in os.scandir(root_dirpath) if f.is_dir()]
         for d in dirpaths:
+            institution_name = os.path.basename(d)
             if any([os.path.isdir(s.path) for s in os.scandir(d)]):
                 subdirs = [s.path for s in os.scandir(d) if s.is_dir()]
                 pattern_dbs += [PatternDB.load(dirpath=s, strict=True) for s in subdirs]
-            time.sleep(0.01)
-            db = PatternDB.load(dirpath=d, strict=True)
-            pattern_dbs.append(db)
+                for db in pattern_dbs:
+                    db.name = f'{institution_name}_{db.name}'
+            else:
+                time.sleep(0.01)
+                db = PatternDB.load(dirpath=d, strict=True)
+                pattern_dbs.append(db)
         return pattern_dbs
 
     @classmethod

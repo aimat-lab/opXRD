@@ -32,8 +32,8 @@ class DatabaseAnalyser:
         random.seed(42)
 
     def run_all(self):
-        self.plot_in_single(n_patterns=10)
-        self.plot_fourier(max_freq=2)
+        self.plot_in_single()
+        # self.plot_fourier(max_freq=2)
         self.plot_pca_scatter()
         self.plot_effective_components()
         self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'histogram.png'))
@@ -41,10 +41,10 @@ class DatabaseAnalyser:
         self.show_label_fractions()
         self.print_total_counts()
 
-    def plot_in_single(self, n_patterns : int):
+    def plot_in_single(self, limit_patterns : int = 10**6):
         for database in self.databases:
-            save_fpath = os.path.join(self.output_dirpath, f'{database.name}_pattern_multiplot.png')
-            database.show_all(single_plot=True, limit_patterns=n_patterns, save_fpath=save_fpath)
+            save_fpath = os.path.join(self.output_dirpath, f'{database.name}_pattern_multiplot_patterns_{limit_patterns}.png')
+            database.show_all(single_plot=True, limit_patterns=limit_patterns, save_fpath=save_fpath)
 
     def plot_fourier(self, max_freq=2):
         for db in self.databases:
@@ -249,4 +249,5 @@ if __name__ == "__main__":
     full_dirpath = '/home/daniel/aimat/data/opXRD/final'
     opxrd_databases = OpXRD.load_project_list(root_dirpath=test_dirpath)
     analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
-    analyser.run_all()
+    # analyser.run_all()
+    analyser.plot_in_single()
