@@ -32,7 +32,7 @@ class DatabaseAnalyser:
         random.seed(42)
 
     def run_all(self):
-        self.plot_databases_in_single(n_patterns=10)
+        self.plot_in_single(n_patterns=10)
         self.plot_fourier(max_freq=2)
         self.plot_pca_scatter()
         self.plot_effective_components()
@@ -41,7 +41,7 @@ class DatabaseAnalyser:
         self.show_label_fractions()
         self.print_total_counts()
 
-    def plot_databases_in_single(self, n_patterns : int):
+    def plot_in_single(self, n_patterns : int):
         for database in self.databases:
             save_fpath = os.path.join(self.output_dirpath, f'{database.name}_pattern_multiplot.png')
             database.show_all(single_plot=True, limit_patterns=n_patterns, save_fpath=save_fpath)
@@ -94,8 +94,8 @@ class DatabaseAnalyser:
         example_pca_coords =  [transformed_data[idx] for idx in rand_indices]
 
         self._plot_pca_scatter(transformed_data, title=f'(1): Two component scatter plot for combined Databases')
-        self._plot_pca_basis(pca, title=f'(2): PCA basis')
-        self._plot_reconstructed(pca, example_xy_list, example_pca_coords, title=f'(3): Comparison of Original and Reconstructed Patterns for ')
+        self._plot_pca_basis(pca, title=f'(2): PCA basis for combined databases')
+        self._plot_reconstructed(pca, example_xy_list, example_pca_coords, title=f'(3): Comparison of Original and PCA-reconstructed Patterns')
         print('done')
 
     def _plot_pca_scatter(self, transformed_data, title : str):
@@ -106,14 +106,14 @@ class DatabaseAnalyser:
             if l > max_points:
                 indices = np.random.choice(len(partial), size=max_points, replace=False)
                 partial = partial[indices]
-            plt.scatter(partial[:, 0], partial[:, 1], label=f'db number {j}')
+            plt.scatter(partial[:, 0], partial[:, 1], label=self.databases[j].name)
             transformed_data = transformed_data[l:]
 
         plt.title(f'{title}')
         plt.xlabel('Component 1')
         plt.ylabel('Component 2')
         plt.legend()
-        plt.savefig(os.path.join(self.output_dirpath, f'pca_scatter_{title}.png'))
+        plt.savefig(os.path.join(self.output_dirpath, f'ALL_pca_scatter_.png'))
         plt.show()
 
     def _plot_pca_basis(self, pca, title : str):
@@ -122,7 +122,7 @@ class DatabaseAnalyser:
         plt.plot(x, b1)
         plt.plot(x, b2)
         plt.title(f'{title}')
-        plt.savefig(os.path.join(self.output_dirpath, f'pca_basis_{title}.png'))
+        plt.savefig(os.path.join(self.output_dirpath, f'ALL_pca_basis_.png'))
         plt.show()
 
     def _plot_reconstructed(self, pca, example_xy_list, example_pca_coords, title):
@@ -138,7 +138,7 @@ class DatabaseAnalyser:
             self._set_ax_properties(axs[index, 1], title='Reconstructed pattern', xlabel='x', ylabel='Relative intensity')
 
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dirpath, f'pca_reconstructed_{title}.png'))
+        plt.savefig(os.path.join(self.output_dirpath, f'ALL_pca_reconstructed_.png'))
         plt.show()
 
     def plot_effective_components(self):
