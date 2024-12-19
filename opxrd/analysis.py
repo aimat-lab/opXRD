@@ -140,9 +140,8 @@ class DatabaseAnalyser:
         plt.show()
 
     def plot_histogram(self):
-        self.print_text(f'---> Histogram of general information')
-        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'),
-                                       attach_colorbar=False)
+        self.print_text(f'---> Histogram of general information on opXRD')
+        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'),attach_colorbar=False)
 
     def show_label_fractions(self):
         self.print_text(f'---> Overview of label fractions per contribution')
