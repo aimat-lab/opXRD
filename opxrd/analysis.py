@@ -4,25 +4,22 @@ import random
 import sys
 
 import numpy as np
+from IPython.core.display import Markdown
 from IPython.core.display_functions import display
+from matplotlib import pyplot as plt
 from matplotlib.ticker import LogLocator
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 from tabulate import tabulate
 
+from holytools.devtools import Profiler
 from xrdpattern.pattern import PatternDB
 from xrdpattern.pattern import XrdPattern
-from matplotlib import pyplot as plt
-
-from opxrd import OpXRD
 from xrdpattern.xrd import LabelType
-
-from holytools.devtools import Profiler
 
 profiler = Profiler()
 
 # %%
-from IPython.display import Latex
 
 
 class DatabaseAnalyser:
@@ -206,6 +203,6 @@ class DatabaseAnalyser:
     @staticmethod
     def print_text(msg: str):
         if 'ipykernel' in sys.modules:
-            display(Latex(msg))
+            display(Markdown(msg))
         else:
             print(msg)
