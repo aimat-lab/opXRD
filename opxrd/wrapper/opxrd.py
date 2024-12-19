@@ -37,8 +37,9 @@ class OpXRD(PatternDB):
             if any([os.path.isdir(s.path) for s in os.scandir(d)]):
                 subdirs = [s.path for s in os.scandir(d) if s.is_dir()]
                 new_dbs = [PatternDB.load(dirpath=s, strict=True) for s in subdirs]
-                for db in new_dbs:
-                    db.name = f'{institution_name}-{db.name}'
+                for k, db in enumerate(new_dbs):
+                    upper_alphabet = [chr(i) for i in range(65, 91)]
+                    db.name = f'{institution_name}-{upper_alphabet[k]}'
                 pattern_dbs += new_dbs
             else:
                 time.sleep(0.01)
@@ -113,5 +114,6 @@ class OpXRD(PatternDB):
 
 
 if __name__ == "__main__":
+    smoltest_dirpath = '/home/daniel/aimat/data/opXRD/test_smol'
     test_dirpath = '/home/daniel/aimat/data/opXRD/test'
     dbs = OpXRD.load_project_list(root_dirpath=test_dirpath)

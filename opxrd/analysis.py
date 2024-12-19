@@ -206,7 +206,9 @@ class DatabaseAnalyser:
         print(msg)
 
 if __name__ == "__main__":
-    test_databases = OpXRD.load_project_list(root_dirpath='/home/daniel/aimat/data/opXRD/test_smol')
+    smol_testdirpath = '/home/daniel/aimat/data/opXRD/test_smol'
+    test_dirpath = '/home/daniel/aimat/data/opXRD/test'
+    test_databases = OpXRD.load_project_list(root_dirpath=test_dirpath)
     # opxrd_databases = OpXRD.load_project_list(root_dirpath='/home/daniel/aimat/data/opXRD/final')
     analyser = DatabaseAnalyser(databases=test_databases, output_dirpath='/tmp/opxrd_analysis')
     analyser.plot_effective_components()
