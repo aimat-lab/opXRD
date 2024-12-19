@@ -61,7 +61,7 @@ class DatabaseAnalyser:
         cols = 3
         rows = math.ceil(len(self.databases) / cols)
         num_plots = len(self.databases)
-        fig = plt.figure(dpi=300, figsize=(cols * 3, rows * 3))
+        fig = plt.figure(figsize=(cols*3, rows*3))
         axes = []
         for i in range(num_plots):
             if i != 0:
