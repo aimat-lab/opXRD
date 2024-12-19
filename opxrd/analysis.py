@@ -6,7 +6,7 @@ import sys
 import numpy as np
 from IPython.core.display import Markdown
 from IPython.core.display_functions import display
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, ticker
 from matplotlib.ticker import LogLocator
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
@@ -19,8 +19,7 @@ from xrdpattern.xrd import LabelType
 
 profiler = Profiler()
 
-# %%
-
+# -----------------------------------------
 
 class DatabaseAnalyser:
     def __init__(self, databases: list[PatternDB], output_dirpath: str):
@@ -39,8 +38,7 @@ class DatabaseAnalyser:
         self.plot_in_single(limit_patterns=10)
         self.plot_in_single(limit_patterns=50)
         self.plot_in_single(limit_patterns=100)
-        # self.plot_fourier(max_freq=2)
-        # self.plot_pca_scatter()
+        self.plot_fourier(max_freq=2)
         self.plot_effective_components()
 
         self.plot_histogram()
@@ -85,22 +83,20 @@ class DatabaseAnalyser:
         plt.savefig(f'{save_fpath}')
         plt.show()
 
-    def plot_fourier(self, max_freq=5):
+    def plot_fourier(self, max_freq=20):
         for db in self.databases:
             fig, ax = plt.subplots(figsize=(10, 4), dpi=300)
-            patterns = db.patterns[:10]
-            for p in patterns:
-                x, y = p.get_pattern_data()
-                xf, yf = self.compute_fourier_transform(x, y, max_freq)
 
-                xf, yf = xf[100:], yf[100:]
+            db_intensities = [p.get_pattern_data()[1] for p in db.patterns]
+            intensity_sum = np.sum(db_intensities, axis=0)
+            x, _ = db.patterns[0].get_pattern_data()
+            xf, yf = self.compute_continuous_ft(x, intensity_sum, max_freq)
 
-                plt.plot(xf, yf, linewidth=0.75, linestyle='--', alpha=0.75)
-
-            ax.set_title(
-                f'{db.name} patterns Fourier transform ' + r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$' + f' [No. patterns = {len(patterns)}]')
+            plt.plot(xf, yf)
+            ax.set_title(f'{db.name} patterns Fourier transform ' + r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
             ax.set_xlabel(r'k [deg$^{−1}$]')
-            ax.set_ylabel('|F($k$)| (a.u.)')
+            ax.set_ylabel('l|F($k$)| (a.u.)')
+            ax.set_yscale('log')
 
             plt.savefig(os.path.join(self.output_dirpath, f'{db.name}_fourier.png'))
             plt.show()
@@ -108,9 +104,7 @@ class DatabaseAnalyser:
     def plot_effective_components(self):
         self.print_text(r'Cumulative explained variance ratio $v$ over components '
                         r'|  $v =  \frac{\sum_i \lambda_i}{\sum^n_{j=1} \lambda_j}$')
-        markers = ['o','s','^','v','D','p','*','+','x']
 
-        num_entries = XrdPattern.std_num_entries()
         for db_num, db in enumerate(self.databases):
             max_components = min(len(db.patterns), XrdPattern.std_num_entries())
             standardized_intensities = np.array([p.get_pattern_data()[1] for p in db.patterns])
@@ -121,7 +115,6 @@ class DatabaseAnalyser:
             accuracies = []
             components_list = range(1,300)
             for n_comp in components_list:
-                # n_comp = int(frac * max_components)
                 explained_variance = np.sum(pca.explained_variance_ratio_[:n_comp])
                 accuracies.append(explained_variance)
 
@@ -186,6 +179,22 @@ class DatabaseAnalyser:
         return xf, yf
 
     @staticmethod
+    def compute_continuous_ft(x, y, max_freq: float):
+        N = len(y)
+        T = (x[-1] - x[0]) / (N - 1)
+        dt = x[1] - x[0]  # Time interval between samples
+        freqs = np.linspace(0, max_freq, num=int(N // 2))  # Discrete frequency range
+
+        Y = np.zeros_like(freqs, dtype=complex)
+        for i, freq in enumerate(freqs):
+            Y[i] = np.sum(y * np.exp(-2j * np.pi * freq * x)) * dt  # Discrete Fourier integral
+
+        xf = freqs
+        yf = np.abs(Y)  # Magnitude of the Fourier transform
+
+        return xf, yf
+
+    @staticmethod
     def compute_mismatch(i1: NDArray, i2: NDArray) -> float:
         norm_original = np.linalg.norm(i1) / len(i1)
         delta_norm = np.linalg.norm(i1 - i2) / len(i1)
@@ -205,3 +214,14 @@ class DatabaseAnalyser:
             display(Markdown(msg))
         else:
             print(msg)
+
+if __name__ == "__main__":
+    x = np.linspace(0, 1, num=1000)
+    y = np.exp(-0.5*x**2 / 0.1)
+
+    xf, yf = DatabaseAnalyser.compute_continuous_ft(x=x, y=y, max_freq=20)
+    # plt.plot(x, y)
+    plt.plot(xf, yf)
+    plt.xlabel('k [deg$^{−1}$]')
+    plt.ylabel('l|F($k$)| (a.u.)')
+    plt.show()
