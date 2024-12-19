@@ -1,8 +1,10 @@
 import math
 import os
 import random
+import sys
 
 import numpy as np
+from IPython.core.display_functions import display
 from matplotlib.ticker import LogLocator
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
@@ -134,7 +136,7 @@ class DatabaseAnalyser:
         locator = LogLocator(base=10.0, subs=(1.0,), numticks=10)
         plt.gca().xaxis.set_major_locator(locator)
 
-        plt.xlim(1, num_entries // 2)
+        plt.xlim(1, 300)
         plt.legend(loc='lower right')
         plt.savefig(os.path.join(self.output_dirpath, f'ALL_effective_components.png'))
 
@@ -203,12 +205,7 @@ class DatabaseAnalyser:
 
     @staticmethod
     def print_text(msg: str):
-        print(msg)
-
-if __name__ == "__main__":
-    smol_testdirpath = '/home/daniel/aimat/data/opXRD/test_smol'
-    test_dirpath = '/home/daniel/aimat/data/opXRD/test'
-    test_databases = OpXRD.load_project_list(root_dirpath=test_dirpath)
-    # opxrd_databases = OpXRD.load_project_list(root_dirpath='/home/daniel/aimat/data/opXRD/final')
-    analyser = DatabaseAnalyser(databases=test_databases, output_dirpath='/tmp/opxrd_analysis')
-    analyser.plot_effective_components()
+        if 'ipykernel' in sys.modules:
+            display(Latex(msg))
+        else:
+            print(msg)
