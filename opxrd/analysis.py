@@ -3,6 +3,7 @@ import os
 import random
 
 import numpy as np
+from matplotlib.ticker import LogLocator, Locator
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 from tabulate import tabulate
@@ -21,6 +22,45 @@ profiler = Profiler()
 # %%
 from IPython.display import Latex
 
+
+class MinorSymLogLocator(Locator):
+    """
+    Dynamically find minor tick positions based on the positions of
+    major ticks for a symlog scaling.
+    """
+    def __init__(self, linthresh):
+        """
+        Ticks will be placed between the major ticks.
+        The placement is linear for x between -linthresh and linthresh,
+        otherwise its logarithmically
+        """
+        self.linthresh = linthresh
+
+    def __call__(self):
+        'Return the locations of the ticks'
+        majorlocs = self.axis.get_majorticklocs()
+
+        # iterate through minor locs
+        minorlocs = []
+
+        # handle the lowest part
+        for i in range(1, len(majorlocs)):
+            majorstep = majorlocs[i] - majorlocs[i-1]
+            if abs(majorlocs[i-1] + majorstep/2) < self.linthresh:
+                ndivs = 10
+            elif majorlocs[i] <= 1:
+                ndivs = 1
+            else:
+                ndivs = 9
+            minorstep = majorstep / ndivs
+            locs = np.arange(majorlocs[i-1], majorlocs[i], minorstep)[1:]
+            minorlocs.extend(locs)
+
+        return self.raise_if_exceeds(np.array(minorlocs))
+
+    def tick_values(self, vmin, vmax):
+        raise NotImplementedError('Cannot get tick locations for a '
+                                  '%s type.' % type(self))
 
 class DatabaseAnalyser:
     def __init__(self, databases: list[PatternDB], output_dirpath: str):
@@ -108,10 +148,10 @@ class DatabaseAnalyser:
     def plot_effective_components(self):
         # self.print_text(r'---> Average $\overline{\Delta}$ over fraction of max components per database; '
         #                 r'$\Delta = \frac{|| I(2\theta) - I(2\theta)_{PCA}||}{||I(2\theta)||}$')
-        self.print_text(
-            r'Cumulative explained variance ratio $v$ over components |  $v =  \frac{\sum_i \lambda_i}{\sum^n_{j=1} \lambda_j}$')
-        # markers = ['o','s','^','v','D','p','*','+','x']
-
+        self.print_text(r'Cumulative explained variance ratio $v$ over components '
+                        r'|  $v =  \frac{\sum_i \lambda_i}{\sum^n_{j=1} \lambda_j}$')
+        markers = ['o','s','^','v','D','p','*','+','x']
+        #
         num_entries = XrdPattern.std_num_entries()
         for db_num, db in enumerate(self.databases):
             max_components = min(len(db.patterns), XrdPattern.std_num_entries())
@@ -122,7 +162,7 @@ class DatabaseAnalyser:
 
             accuracies = []
             # components_list = np.linspace(0,1, num=20)
-            components_list = range(300)
+            components_list = range(0,300)
             for n_comp in components_list:
                 # n_comp = int(frac * max_components)
                 explained_variance = np.sum(pca.explained_variance_ratio_[:n_comp])
@@ -133,8 +173,12 @@ class DatabaseAnalyser:
 
         plt.xlabel(f'No. components')
         plt.ylabel(f'Cumulative explained variance $V$')
+        plt.xscale(f'symlog')
+        yaxis = plt.gca().xaxis
+        yaxis.set_minor_locator(MinorSymLogLocator(1e-1))
+
+
         plt.xlim(0, num_entries // 2)
-        plt.ylim(0.6, 1)
         plt.legend(loc='lower right')
         plt.savefig(os.path.join(self.output_dirpath, f'ALL_effective_components.png'))
 
@@ -205,8 +249,8 @@ class DatabaseAnalyser:
     def print_text(msg: str):
         print(msg)
 
-
-test_databases = OpXRD.load_project_list(root_dirpath='/home/daniel/aimat/data/opXRD/test')
-opxrd_databases = OpXRD.load_project_list(root_dirpath='/home/daniel/aimat/data/opXRD/final')
-analyser = DatabaseAnalyser(databases=opxrd_databases, output_dirpath='/tmp/opxrd_analysis')
-analyser.plot_effective_components()
+if __name__ == "__main__":
+    test_databases = OpXRD.load_project_list(root_dirpath='/home/daniel/aimat/data/opXRD/test_smol')
+    # opxrd_databases = OpXRD.load_project_list(root_dirpath='/home/daniel/aimat/data/opXRD/final')
+    analyser = DatabaseAnalyser(databases=test_databases, output_dirpath='/tmp/opxrd_analysis')
+    analyser.plot_effective_components()
