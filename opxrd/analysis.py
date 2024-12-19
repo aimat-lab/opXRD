@@ -72,7 +72,7 @@ class DatabaseAnalyser:
             data = [p.get_pattern_data() for p in patterns]
 
             for x, y in data:
-                ax.plot(x, y, linewidth=0.25, alpha=0.50, linestyle='--')
+                ax.plot(x, y, linewidth=0.25, alpha=0.75, linestyle='--')
             title = f'{letter})'
 
             if title:
