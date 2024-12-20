@@ -6,7 +6,7 @@ import sys
 import numpy as np
 from IPython.core.display import Markdown
 from IPython.core.display_functions import display
-from matplotlib import pyplot as plt, ticker
+from matplotlib import pyplot as plt
 from matplotlib.ticker import LogLocator
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
@@ -81,6 +81,19 @@ class DatabaseAnalyser:
 
         plt.tight_layout()
         plt.savefig(f'{save_fpath}')
+        plt.show()
+
+    @staticmethod
+    def plot_fourier_reference():
+        x = np.linspace(0, 1, num=1000)
+        a = 0.3
+        y = np.exp(-0.5 * (x - a) ** 2 / 0.1)
+
+        xf1, yf1 = DatabaseAnalyser.compute_continuous_ft(x=x, y=y, max_freq=20)
+        plt.plot(xf1, yf1)
+        plt.xlabel('k [deg$^{−1}$]')
+        plt.yscale('log')
+        plt.ylabel('l|F($k$)| (a.u.)')
         plt.show()
 
     def plot_fourier(self, max_freq=20):
@@ -186,8 +199,9 @@ class DatabaseAnalyser:
         freqs = np.linspace(0, max_freq, num=int(N // 2))  # Discrete frequency range
 
         Y = np.zeros_like(freqs, dtype=complex)
-        for i, freq in enumerate(freqs):
-            Y[i] = np.sum(y * np.exp(-2j * np.pi * freq * x)) * dt  # Discrete Fourier integral
+        for i, f in enumerate(freqs):
+            f : float
+            Y[i] = np.sum(y * np.exp(-2j * np.pi * f * x)) * dt  # Discrete Fourier integral
 
         xf = freqs
         yf = np.abs(Y)  # Magnitude of the Fourier transform
@@ -214,14 +228,3 @@ class DatabaseAnalyser:
             display(Markdown(msg))
         else:
             print(msg)
-
-if __name__ == "__main__":
-    x = np.linspace(0, 1, num=1000)
-    y = np.exp(-0.5*x**2 / 0.1)
-
-    xf, yf = DatabaseAnalyser.compute_continuous_ft(x=x, y=y, max_freq=20)
-    # plt.plot(x, y)
-    plt.plot(xf, yf)
-    plt.xlabel('k [deg$^{−1}$]')
-    plt.ylabel('l|F($k$)| (a.u.)')
-    plt.show()
