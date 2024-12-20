@@ -137,7 +137,7 @@ class DatabaseAnalyser:
             plt.plot(components_list, accuracies, label=db.name)
 
         plt.xlabel(f'No. components')
-        plt.ylabel(f'Cumulative explained variance $V$')
+        plt.ylabel(f'Cumulative explained variance ratio $V$')
         plt.xscale(f'log')
         locator = LogLocator(base=10.0, subs=(1.0,), numticks=10)
         plt.gca().xaxis.set_major_locator(locator)
