@@ -2,7 +2,6 @@ import math
 import os
 import random
 import sys
-from typing import Callable
 
 import numpy as np
 from IPython.core.display import Markdown
@@ -17,8 +16,6 @@ from holytools.devtools import Profiler
 from xrdpattern.pattern import PatternDB
 from xrdpattern.pattern import XrdPattern
 from xrdpattern.xrd import LabelType
-
-profiler = Profiler()
 
 # -----------------------------------------
 
@@ -71,11 +68,13 @@ class DatabaseAnalyser:
         plt.savefig(f'{save_fpath}')
         plt.show()
 
-    def plot_fourier_reference(self, b: float = 0.3, c: float = 0.1):
-        x = np.linspace(0, 180, num=1000)
-        self.print_text(r'---> Fourier transform of a Gaussian function $I(x) = e^{{-0.5(x-b)^2/c}$' + f'$b = {b}, c =  {c}$')
 
-        y = np.exp(-1 / 2 * (x - b) ** 2 / c)
+    def plot_reference_fourier(self, b1: float = 0.3, b2: float = 0.5, c = 2):
+        x = np.linspace(0, 180, num=1000)
+        self.print_text(r'---> Fourier transform of a pair of gaussians $I(x) = e^{{-0.5(x-b)^2/c}$')
+        c1, c2 = 0.1, 0.2
+
+        y = 5* np.exp(-1 / 2 * (x - b1) ** 2 / c1) + np.exp(-1 / 2 * (x - b2) ** 2 / c2)
         xf, yf = self.compute_fourier(x, y)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
@@ -86,7 +85,6 @@ class DatabaseAnalyser:
         ax1.set_title('Original Gaussian')
 
         # Fourier Transform plot
-        self.plot_fourier()
         ax2.plot(xf, yf, label='Fourier Transform', color='r')
         ax2.set_xlabel('Frequency (Hz)')
         ax2.set_ylabel('|F(k)|')
@@ -95,11 +93,8 @@ class DatabaseAnalyser:
         plt.tight_layout()
         plt.show()
 
-        self.print_text(
-            msg=r'Standard gaussian: $G(x, \mu=0)$, Fourier transform  $\overline{G}(k) \rightarrow$ Gaussian ' + '\n'
-                                                                                                                  r'Shifted gaussian: $G(x, \mu=b)$, Fourier transform $\overline{G}(k) \cdot e^{ikb} \rightarrow$ Oscillatory gaussian')
 
-    def plot_fourier(self):
+    def plot_opxrd_fourier(self):
         for db in self.databases:
             fig, ax = plt.subplots(figsize=(10, 4), dpi=300)
 
@@ -113,12 +108,12 @@ class DatabaseAnalyser:
             ax.set_title(f'{db.name} patterns summed up fourier transform ' + r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
             ax.set_xlabel(r'k [deg$^{−1}$]')
             ax.set_ylabel('l|F($k$)| (a.u.)')
-            ax.set_yscale('log')
 
             plt.savefig(os.path.join(self.output_dirpath, f'{db.name}_fourier.png'))
             plt.show()
 
-    def plot_effective_components(self):
+
+    def plot_effective_components(self, use_fractions : bool = True):
         self.print_text(r'Cumulative explained variance ratio $v$ over components '
                         r'|  $v =  \frac{\sum_i \lambda_i}{\sum^n_{j=1} \lambda_j}$')
 
@@ -130,28 +125,41 @@ class DatabaseAnalyser:
             pca.fit_transform(standardized_intensities)
 
             accuracies = []
-            components_list = range(1, 300)
-            for n_comp in components_list:
+            print(f'Max components for {db.name} = {max_components}')
+            components_list = range(0, max_components)
+
+            x_axis = components_list if not use_fractions else np.linspace(0,1, num=max_components)
+            for x in x_axis:
+                if use_fractions:
+                    n_comp = int(x * max_components)
+                else:
+                    n_comp = x
                 explained_variance = np.sum(pca.explained_variance_ratio_[:n_comp])
                 accuracies.append(explained_variance)
-            plt.plot(components_list, accuracies, label=db.name)
+            plt.plot(x_axis, accuracies, label=db.name)
 
-        plt.xlabel(f'No. components')
-        plt.ylabel(f'Cumulative explained variance ratio $V$')
+
+        if use_fractions:
+            plt.xlabel(f'Fraction of max. No. components')
+        else:
+            plt.xlabel(f'No. components')
         plt.xscale(f'log')
-        locator = LogLocator(base=10.0, subs=(1.0,), numticks=10)
-        plt.gca().xaxis.set_major_locator(locator)
+        plt.ylabel(f'Cumulative explained variance ratio $V$')
 
-        plt.xlim(1, 300)
+        # locator = LogLocator(base=10.0, subs=(1.0,), numticks=10)
+        # plt.gca().xaxis.set_major_locator(locator)
+
+        # plt.xlim(1, 300)
         plt.legend(loc='lower right')
         plt.savefig(os.path.join(self.output_dirpath, f'ALL_effective_components.png'))
 
         plt.show()
 
-    def plot_histogram(self):
+
+    def plot_histogram(self, attach_colorbar : bool = False):
         self.print_text(f'---> Histogram of general information on opXRD')
-        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'),
-                                       attach_colorbar=False)
+        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'), attach_colorbar=attach_colorbar)
+
 
     def show_label_fractions(self):
         self.print_text(f'---> Overview of label fractions per contribution')
@@ -172,11 +180,12 @@ class DatabaseAnalyser:
         table = tabulate(table_data, headers=col_headers, showindex=row_headers, tablefmt='psql')
         print(table)
 
+
     def print_total_counts(self):
         self.print_text(f'---> Total pattern counts in opXRD')
-        num_total = len(self.get_all_patterns())
+        num_total = len(self.joined_db.patterns)
 
-        labeled_patterns = [p for p in self.get_all_patterns() if p.is_labeled()]
+        labeled_patterns = [p for p in self.joined_db.patterns if p.is_labeled()]
         num_labelel = len(labeled_patterns)
         print(f'Total number of patterns = {num_total}')
         print(f'Number of labeled patterns = {num_labelel}')
@@ -198,9 +207,6 @@ class DatabaseAnalyser:
     # -----------------------
     # tools
 
-    def get_all_patterns(self) -> list[XrdPattern]:
-        return self.joined_db.patterns
-
     @staticmethod
     def print_text(msg: str):
         if 'ipykernel' in sys.modules:
@@ -219,3 +225,12 @@ class DatabaseAnalyser:
         yf = 2.0 / N * np.abs(yf[:N // 2])
         return xf, yf
 
+
+if __name__ == "__main__":
+    from opxrd.wrapper import OpXRD
+    smoltest_dirpath = '/home/daniel/aimat/data/opXRD/test_smol'
+    bigtest_dirpath = '/home/daniel/aimat/data/opXRD/test'
+    test_databases = OpXRD.load_project_list(root_dirpath=smoltest_dirpath)
+
+    analyser = DatabaseAnalyser(databases=test_databases, output_dirpath='/tmp/opxrd_analysis')
+    analyser.plot_reference_fourier(b1=60, b2=80)
