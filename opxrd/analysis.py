@@ -2,6 +2,7 @@ import math
 import os
 import random
 import sys
+from typing import Callable
 
 import numpy as np
 from IPython.core.display import Markdown
@@ -18,6 +19,7 @@ from xrdpattern.pattern import XrdPattern
 from xrdpattern.xrd import LabelType
 
 profiler = Profiler()
+
 
 # -----------------------------------------
 
@@ -38,7 +40,7 @@ class DatabaseAnalyser:
         self.plot_in_single(limit_patterns=10)
         self.plot_in_single(limit_patterns=50)
         self.plot_in_single(limit_patterns=100)
-        self.plot_fourier(max_freq=2)
+        self.plot_fourier()
         self.plot_effective_components()
 
         self.plot_histogram()
@@ -56,7 +58,7 @@ class DatabaseAnalyser:
         cols = 3
         rows = math.ceil(len(self.databases) / cols)
         num_plots = len(self.databases)
-        fig = plt.figure(figsize=(cols*3, rows*3))
+        fig = plt.figure(figsize=(cols * 3, rows * 3))
         axes = []
         for i in range(num_plots):
             if i != 0:
@@ -83,30 +85,49 @@ class DatabaseAnalyser:
         plt.savefig(f'{save_fpath}')
         plt.show()
 
-    @staticmethod
-    def plot_fourier_reference():
-        x = np.linspace(0, 1, num=1000)
-        a = 0.3
-        y = np.exp(-0.5 * (x - a) ** 2 / 0.1)
+    def plot_fourier_reference(self, b: float = 0.3, c: float = 0.1):
+        x = np.linspace(0, 180, num=1000)
+        self.print_text(
+            r'---> Fourier transform of a Gaussian function $I(x) = e^{{-0.5(x-b)^2/c}$' + f'$b = {b}, c =  {c}$')
 
-        xf1, yf1 = DatabaseAnalyser.compute_continuous_ft(x=x, y=y, max_freq=20)
-        plt.plot(xf1, yf1)
-        plt.xlabel('k [deg$^{−1}$]')
-        plt.yscale('log')
-        plt.ylabel('l|F($k$)| (a.u.)')
+        y = np.exp(-1 / 2 * (x - b) ** 2 / c)
+
+        xf, yf = self.compute_continuous_ft(x, y)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+
+        # Gaussian plot
+        ax1.plot(x, y, label='Original Gaussian')
+        ax1.set_xlabel('x')
+        ax1.set_ylabel('Amplitude')
+        ax1.set_title('Original Gaussian')
+
+        # Fourier Transform plot
+        self.plot_fourier()
+        ax2.plot(xf, yf, label='Fourier Transform', color='r')
+        ax2.set_xlabel('Frequency (Hz)')
+        ax2.set_ylabel('|F(k)|')
+        ax2.set_title('Fourie|r Transform')
+
+        plt.tight_layout()
         plt.show()
 
-    def plot_fourier(self, max_freq=20):
+        self.print_text(
+            msg=r'Standard gaussian: $G(x, \mu=0)$, Fourier transform  $\overline{G}(k) \rightarrow$ Gaussian ' + '\n'
+                                                                                                                  r'Shifted gaussian: $G(x, \mu=b)$, Fourier transform $\overline{G}(k) \cdot e^{ikb} \rightarrow$ Oscillatory gaussian')
+
+    def plot_fourier(self):
         for db in self.databases:
             fig, ax = plt.subplots(figsize=(10, 4), dpi=300)
 
             db_intensities = [p.get_pattern_data()[1] for p in db.patterns]
+
             intensity_sum = np.sum(db_intensities, axis=0)
             x, _ = db.patterns[0].get_pattern_data()
-            xf, yf = self.compute_continuous_ft(x, intensity_sum, max_freq)
+            xf, yf = self.compute_continuous_ft(x, intensity_sum)
 
             plt.plot(xf, yf)
-            ax.set_title(f'{db.name} patterns Fourier transform ' + r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
+            ax.set_title(
+                f'{db.name} patterns summed up fourier transform ' + r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
             ax.set_xlabel(r'k [deg$^{−1}$]')
             ax.set_ylabel('l|F($k$)| (a.u.)')
             ax.set_yscale('log')
@@ -126,7 +147,7 @@ class DatabaseAnalyser:
             pca.fit_transform(standardized_intensities)
 
             accuracies = []
-            components_list = range(1,300)
+            components_list = range(1, 300)
             for n_comp in components_list:
                 explained_variance = np.sum(pca.explained_variance_ratio_[:n_comp])
                 accuracies.append(explained_variance)
@@ -147,7 +168,8 @@ class DatabaseAnalyser:
 
     def plot_histogram(self):
         self.print_text(f'---> Histogram of general information on opXRD')
-        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'),attach_colorbar=False)
+        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'),
+                                       attach_colorbar=False)
 
     def show_label_fractions(self):
         self.print_text(f'---> Overview of label fractions per contribution')
@@ -178,37 +200,6 @@ class DatabaseAnalyser:
         print(f'Number of labeled patterns = {num_labelel}')
 
     @staticmethod
-    def compute_fourier_transform(x, y, max_freq: float):
-        N = len(y)
-        T = (x[-1] - x[0]) / (N - 1)
-        yf = np.fft.fft(y)
-        xf = np.fft.fftfreq(N, T)[:N // 2]
-
-        magnitude = 2.0 / N * np.abs(yf[:N // 2])
-        valid_indices = xf <= max_freq
-
-        xf = xf[valid_indices]
-        yf = magnitude[valid_indices]
-        return xf, yf
-
-    @staticmethod
-    def compute_continuous_ft(x, y, max_freq: float):
-        N = len(y)
-        T = (x[-1] - x[0]) / (N - 1)
-        dt = x[1] - x[0]  # Time interval between samples
-        freqs = np.linspace(0, max_freq, num=int(N // 2))  # Discrete frequency range
-
-        Y = np.zeros_like(freqs, dtype=complex)
-        for i, f in enumerate(freqs):
-            f : float
-            Y[i] = np.sum(y * np.exp(-2j * np.pi * f * x)) * dt  # Discrete Fourier integral
-
-        xf = freqs
-        yf = np.abs(Y)  # Magnitude of the Fourier transform
-
-        return xf, yf
-
-    @staticmethod
     def compute_mismatch(i1: NDArray, i2: NDArray) -> float:
         norm_original = np.linalg.norm(i1) / len(i1)
         delta_norm = np.linalg.norm(i1 - i2) / len(i1)
@@ -228,3 +219,17 @@ class DatabaseAnalyser:
             display(Markdown(msg))
         else:
             print(msg)
+
+
+    @staticmethod
+    def compute_fourier(x: NDArray, f: Callable):
+        y = f(x)
+        N = len(y)
+        T = (x[-1] - x[0]) / (N - 1)
+        # T = 1/f where f: Sampling frequency
+
+        yf = np.fft.fft(y)
+        xf = np.fft.fftfreq(N, T)[:N // 2]
+        yf = 2.0 / N * np.abs(yf[:N // 2])
+        return xf, yf
+
