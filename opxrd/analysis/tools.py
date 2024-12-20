@@ -19,3 +19,5 @@ def print_text(msg: str):
         display(Markdown(msg))
     except:
         print(msg)
+
+

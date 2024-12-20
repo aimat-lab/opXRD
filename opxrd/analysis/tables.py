@@ -1,12 +1,12 @@
 import os
 import random
 
-from IPython.core.display_functions import display
-from mistune import Markdown
 from tabulate import tabulate
 
+from opxrd.analysis.tools import print_text
 from xrdpattern.pattern import PatternDB
 from xrdpattern.xrd import LabelType
+
 
 # ---------------------------------------------------
 
@@ -22,7 +22,7 @@ class TableAnalyser:
 
 
     def show_label_fractions(self):
-        self.print_text(f'---> Overview of label fractions per contribution')
+        print_text(f'---> Overview of label fractions per contribution')
         table_data = []
         for d in self.databases:
             label_counts = {l: 0 for l in LabelType}
@@ -42,7 +42,7 @@ class TableAnalyser:
 
 
     def print_total_counts(self):
-        self.print_text(f'---> Total pattern counts in opXRD')
+        print_text(f'---> Total pattern counts in opXRD')
         num_total = len(self.joined_db.patterns)
 
         labeled_patterns = [p for p in self.joined_db.patterns if p.is_labeled()]
