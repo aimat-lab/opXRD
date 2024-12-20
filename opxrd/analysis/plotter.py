@@ -1,39 +1,21 @@
 import math
 import os
-import random
-import sys
 
 import numpy as np
-from IPython.core.display import Markdown
-from IPython.core.display_functions import display
 from matplotlib import pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.ticker import LogLocator
-from numpy.typing import NDArray
 from sklearn.decomposition import PCA
-from tabulate import tabulate
 
-from holytools.devtools import Profiler
-from xrdpattern.pattern import PatternDB
+from opxrd.analysis.tables import TableAnalyser
+from opxrd.analysis.tools import print_text, compute_fourier
 from xrdpattern.pattern import XrdPattern
-from xrdpattern.xrd import LabelType
 
 # -----------------------------------------
 
-class DatabaseAnalyser:
-    def __init__(self, databases: list[PatternDB], output_dirpath: str):
-        if len(databases) == 0:
-            raise ValueError('No databases provided')
-        self.databases: list[PatternDB] = databases
-        self.joined_db: PatternDB = PatternDB.merge(databases)
-        self.output_dirpath: str = output_dirpath
-        os.makedirs(self.output_dirpath, exist_ok=True)
-        random.seed(42)
-
+class DatabaseAnalyser(TableAnalyser):
     def plot_in_single(self, limit_patterns: int):
         lower_alphabet = [chr(i) for i in range(97, 123)]
         explanation = [f'{letter}:{db.name}' for letter, db in zip(lower_alphabet, self.databases)]
-        self.print_text(f'---> Combined pattern plot for databaes {explanation} | No. patterns = {limit_patterns}')
+        print_text(f'---> Combined pattern plot for databaes {explanation} | No. patterns = {limit_patterns}')
 
         cols = 3
         rows = math.ceil(len(self.databases) / cols)
@@ -60,13 +42,14 @@ class DatabaseAnalyser:
         plt.show()
 
 
-    def plot_reference_fourier(self, b1: float = 0.3, b2: float = 0.5, c = 2):
-        self.print_text(r'---> Fourier transform of a pair of gaussians $I(x) = e^{{-0.5(x-b)^2/c}$')
+    @staticmethod
+    def plot_reference_fourier(b1: float = 0.3, b2: float = 0.5, c = 2):
+        print_text(r'---> Fourier transform of a pair of gaussians $I(x) = e^{{-0.5(x-b)^2/c}$')
 
         c1, c2 = 0.1, 0.2
         x = np.linspace(0, 180, num=1000)
         y = 5 * np.exp(-1 / 2 * (x - b1) ** 2 / c1) + np.exp(-1 / 2 * (x - b2) ** 2 / c2)
-        xf, yf = self.compute_fourier(x, y)
+        xf, yf = compute_fourier(x, y)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
         # Gaussian plot
@@ -92,7 +75,7 @@ class DatabaseAnalyser:
             db_intensities = [p.get_pattern_data()[1] for p in db.patterns]
             intensity_sum = np.sum(db_intensities, axis=0)
             x, _ = db.patterns[0].get_pattern_data()
-            xf, yf = self.compute_fourier(x, intensity_sum)
+            xf, yf = compute_fourier(x, intensity_sum)
             plt.plot(xf, yf)
 
             ax.set_title(f'{db.name} patterns summed up fourier transform ' +
@@ -105,7 +88,7 @@ class DatabaseAnalyser:
 
 
     def plot_effective_components(self, use_fractions : bool = True):
-        self.print_text(r'Cumulative explained variance ratio $v$ over components '
+        print_text(r'Cumulative explained variance ratio $v$ over components '
                         r'|  $v =  \frac{\sum_i \lambda_i}{\sum^n_{j=1} \lambda_j}$')
 
         for db_num, db in enumerate(self.databases):
@@ -139,73 +122,8 @@ class DatabaseAnalyser:
 
 
     def plot_histogram(self, attach_colorbar : bool = False):
-        self.print_text(f'---> Histogram of general information on opXRD')
+        print_text(f'---> Histogram of general information on opXRD')
         self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'), attach_colorbar=attach_colorbar)
-
-
-    def show_label_fractions(self):
-        self.print_text(f'---> Overview of label fractions per contribution')
-        table_data = []
-        for d in self.databases:
-            label_counts = {l: 0 for l in LabelType}
-            patterns = d.patterns
-            for l in LabelType:
-                for p in patterns:
-                    if p.has_label(label_type=l):
-                        label_counts[l] += 1
-            db_percentages = [label_counts[l] / len(patterns) for l in LabelType]
-            table_data.append(db_percentages)
-
-        col_headers = [label.name for label in LabelType]
-        row_headers = [db.name for db in self.databases]
-
-        table = tabulate(table_data, headers=col_headers, showindex=row_headers, tablefmt='psql')
-        print(table)
-
-
-    def print_total_counts(self):
-        self.print_text(f'---> Total pattern counts in opXRD')
-        num_total = len(self.joined_db.patterns)
-
-        labeled_patterns = [p for p in self.joined_db.patterns if p.is_labeled()]
-        num_labelel = len(labeled_patterns)
-        print(f'Total number of patterns = {num_total}')
-        print(f'Number of labeled patterns = {num_labelel}')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # -----------------------
-    # tools
-
-    @staticmethod
-    def print_text(msg: str):
-        if 'ipykernel' in sys.modules:
-            display(Markdown(msg))
-        else:
-            print(msg)
-
-
-    @staticmethod
-    def compute_fourier(x: NDArray, y : NDArray):
-        N = len(y)
-        T = (x[-1] - x[0]) / (N - 1)
-
-        yf = np.fft.fft(y)
-        xf = np.fft.fftfreq(N, T)[:N // 2]
-        yf = 2.0 / N * np.abs(yf[:N // 2])
-        return xf, yf
 
 
 if __name__ == "__main__":
