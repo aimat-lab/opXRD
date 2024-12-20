@@ -20,7 +20,6 @@ from xrdpattern.xrd import LabelType
 
 profiler = Profiler()
 
-
 # -----------------------------------------
 
 class DatabaseAnalyser:
@@ -33,19 +32,6 @@ class DatabaseAnalyser:
         os.makedirs(self.output_dirpath, exist_ok=True)
 
         random.seed(42)
-
-    def run_all(self):
-        print(f'Running analysis for {len(self.databases)} databases: {[db.name for db in self.databases]}')
-
-        self.plot_in_single(limit_patterns=10)
-        self.plot_in_single(limit_patterns=50)
-        self.plot_in_single(limit_patterns=100)
-        self.plot_fourier()
-        self.plot_effective_components()
-
-        self.plot_histogram()
-        self.show_label_fractions()
-        self.print_total_counts()
 
     def plot_in_single(self, limit_patterns: int):
         lower_alphabet = [chr(i) for i in range(97, 123)]
@@ -87,12 +73,10 @@ class DatabaseAnalyser:
 
     def plot_fourier_reference(self, b: float = 0.3, c: float = 0.1):
         x = np.linspace(0, 180, num=1000)
-        self.print_text(
-            r'---> Fourier transform of a Gaussian function $I(x) = e^{{-0.5(x-b)^2/c}$' + f'$b = {b}, c =  {c}$')
+        self.print_text(r'---> Fourier transform of a Gaussian function $I(x) = e^{{-0.5(x-b)^2/c}$' + f'$b = {b}, c =  {c}$')
 
         y = np.exp(-1 / 2 * (x - b) ** 2 / c)
-
-        xf, yf = self.compute_continuous_ft(x, y)
+        xf, yf = self.compute_fourier(x, y)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
         # Gaussian plot
@@ -123,11 +107,10 @@ class DatabaseAnalyser:
 
             intensity_sum = np.sum(db_intensities, axis=0)
             x, _ = db.patterns[0].get_pattern_data()
-            xf, yf = self.compute_continuous_ft(x, intensity_sum)
+            xf, yf = self.compute_fourier(x, intensity_sum)
 
             plt.plot(xf, yf)
-            ax.set_title(
-                f'{db.name} patterns summed up fourier transform ' + r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
+            ax.set_title(f'{db.name} patterns summed up fourier transform ' + r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
             ax.set_xlabel(r'k [deg$^{−1}$]')
             ax.set_ylabel('l|F($k$)| (a.u.)')
             ax.set_yscale('log')
@@ -151,7 +134,6 @@ class DatabaseAnalyser:
             for n_comp in components_list:
                 explained_variance = np.sum(pca.explained_variance_ratio_[:n_comp])
                 accuracies.append(explained_variance)
-
             plt.plot(components_list, accuracies, label=db.name)
 
         plt.xlabel(f'No. components')
@@ -199,13 +181,19 @@ class DatabaseAnalyser:
         print(f'Total number of patterns = {num_total}')
         print(f'Number of labeled patterns = {num_labelel}')
 
-    @staticmethod
-    def compute_mismatch(i1: NDArray, i2: NDArray) -> float:
-        norm_original = np.linalg.norm(i1) / len(i1)
-        delta_norm = np.linalg.norm(i1 - i2) / len(i1)
-        mismatch = delta_norm / norm_original
 
-        return mismatch
+
+
+
+
+
+
+
+
+
+
+
+
 
     # -----------------------
     # tools
@@ -222,11 +210,9 @@ class DatabaseAnalyser:
 
 
     @staticmethod
-    def compute_fourier(x: NDArray, f: Callable):
-        y = f(x)
+    def compute_fourier(x: NDArray, y : NDArray):
         N = len(y)
         T = (x[-1] - x[0]) / (N - 1)
-        # T = 1/f where f: Sampling frequency
 
         yf = np.fft.fft(y)
         xf = np.fft.fftfreq(N, T)[:N // 2]
