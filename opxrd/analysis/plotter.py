@@ -6,8 +6,9 @@ from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 
 from opxrd.analysis.tables import TableAnalyser
-from opxrd.analysis.tools import print_text, compute_fourier
+from opxrd.analysis.tools import compute_fourier, print_text
 from xrdpattern.pattern import XrdPattern
+
 
 # -----------------------------------------
 
@@ -43,7 +44,7 @@ class DatabaseAnalyser(TableAnalyser):
 
 
     @staticmethod
-    def plot_reference_fourier(b1: float = 0.3, b2: float = 0.5, c = 2):
+    def plot_reference_fourier(b1: float = 0.3, b2: float = 0.5):
         print_text(r'---> Fourier transform of a pair of gaussians $I(x) = e^{{-0.5(x-b)^2/c}$')
 
         c1, c2 = 0.1, 0.2
