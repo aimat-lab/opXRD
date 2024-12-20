@@ -27,7 +27,6 @@ class DatabaseAnalyser:
         self.joined_db: PatternDB = PatternDB.merge(databases)
         self.output_dirpath: str = output_dirpath
         os.makedirs(self.output_dirpath, exist_ok=True)
-
         random.seed(42)
 
     def plot_in_single(self, limit_patterns: int):
@@ -35,37 +34,24 @@ class DatabaseAnalyser:
         explanation = [f'{letter}:{db.name}' for letter, db in zip(lower_alphabet, self.databases)]
         self.print_text(f'---> Combined pattern plot for databaes {explanation} | No. patterns = {limit_patterns}')
 
-        lower_alphabet = [chr(i) for i in range(97, 123)]
-        save_fpath = os.path.join(self.output_dirpath, f'ALL_pattern_multiplot.png')
-
         cols = 3
         rows = math.ceil(len(self.databases) / cols)
-        num_plots = len(self.databases)
-        fig = plt.figure(figsize=(cols * 3, rows * 3))
-        axes = []
-        for i in range(num_plots):
-            if i != 0:
-                ax = fig.add_subplot(rows, cols, i + 1, sharex=axes[0], sharey=axes[0])
-            else:
-                ax = fig.add_subplot(rows, cols, i + 1)
-            axes.append(ax)
+
+        fig, axes = plt.subplots(rows, cols, figsize=(cols * 3, rows * 3))
+        axes = axes.flatten()[:len(self.databases)]
 
         for letter, ax, database in zip(lower_alphabet, axes, self.databases):
             patterns = database.patterns[:limit_patterns]
             data = [p.get_pattern_data() for p in patterns]
-
             for x, y in data:
                 ax.plot(x, y, linewidth=0.25, alpha=0.75, linestyle='--')
-            title = f'{letter})'
-
-            if title:
-                ax.set_title(title, loc='left')
+            ax.set_title(f'{letter})', loc='left')
 
         fig.supylabel('Standardized relative intensity (a.u.)')
         fig.supxlabel(r'$2\theta$ [$^\circ$]', ha='center')
 
         plt.tight_layout()
-        plt.savefig(f'{save_fpath}')
+        plt.savefig(os.path.join(self.output_dirpath, f'ALL_pattern_multiplot.png'))
         plt.show()
 
 
@@ -145,11 +131,6 @@ class DatabaseAnalyser:
             plt.xlabel(f'No. components')
         plt.xscale(f'log')
         plt.ylabel(f'Cumulative explained variance ratio $V$')
-
-        # locator = LogLocator(base=10.0, subs=(1.0,), numticks=10)
-        # plt.gca().xaxis.set_major_locator(locator)
-
-        # plt.xlim(1, 300)
         plt.legend(loc='lower right')
         plt.savefig(os.path.join(self.output_dirpath, f'ALL_effective_components.png'))
 
