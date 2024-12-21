@@ -3,11 +3,12 @@ name: Tox Tests
 on:
   push:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '* * * * *'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    name: ${{ github.event_name == 'schedule' && 'Daily Scheduled Test' || 'Tox Tests' }}
     steps:
       - name: Install dependencies
         run: |
