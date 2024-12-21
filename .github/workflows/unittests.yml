@@ -3,7 +3,7 @@ name: Tox Tests
 on:
   push:
   schedule:
-    - cron: '* * * * *'
+    - cron: '0 0 * * *'
 
 jobs:
   test:
