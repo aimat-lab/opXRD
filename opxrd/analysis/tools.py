@@ -10,7 +10,7 @@ def compute_fourier(x: NDArray, y: NDArray):
 
     yf = np.fft.fft(y)
     xf = np.fft.fftfreq(N, T)[:N // 2]
-    yf = 2.0 / N * np.abs(yf[:N // 2])
+    yf = np.abs(yf[:N // 2])
     return xf, yf
 
 

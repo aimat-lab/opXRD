@@ -29,9 +29,10 @@ class DatabaseAnalyser(TableAnalyser):
 
         for letter, ax, database in zip(lower_alphabet, axes, self.databases):
             patterns = database.patterns[:limit_patterns]
-            data = [p.get_pattern_data() for p in patterns]
+            data = [p.get_pattern_data(apply_standardization=False) for p in patterns]
 
             for x, y in data:
+                y = y/np.max(y)
                 ax.plot(x, y, linewidth=0.25, alpha=0.75, linestyle='--')
                 ax.set_title(f'{letter})', loc='left')
 
@@ -57,8 +58,7 @@ class DatabaseAnalyser(TableAnalyser):
         self._fourier_plots(x, [y], msg=msg, figname='reference_fourier.png')
 
 
-    def plot_opxrd_fourier(self, combine_plots : bool = True, filter_dbs : Optional[str] = None):
-        n_entries = 512
+    def plot_opxrd_fourier(self, combine_plots : bool = True, filter_dbs : Optional[str] = None, n_entries : int = 512):
         y_list = []
 
         databases = self.databases
@@ -69,9 +69,9 @@ class DatabaseAnalyser(TableAnalyser):
             db_intensities = [p.get_pattern_data(num_entries=n_entries)[1] for p in db.patterns]
             summed_intensities = np.sum(db_intensities, axis=0)
             normalized_sums = summed_intensities / np.max(summed_intensities)
+
             if not combine_plots:
-                self._fourier_plots(x, [normalized_sums], msg=f'---> Fourier transform of summed {db.name} patterns',
-                                    figname=f'{db.name}_fourier.png')
+                self._fourier_plots(x, [normalized_sums], msg=f'---> Fourier transform of summed {db.name} patterns',figname=f'{db.name}_fourier.png')
             else:
                 y_list.append(normalized_sums)
 
@@ -104,7 +104,8 @@ class DatabaseAnalyser(TableAnalyser):
             ax2.plot(xf, yf, label='Fourier Transform magnitude')
         ax2.set_xlabel('Frequency k')
         ax2.set_ylabel('Magnitude |F(k)|')
-        ax2.set_yscale(f'log')
+        # ax2.set_yscale(f'log')
+        ax2.set_xlim(0, 2.5)
         ax2.set_title('Fourier Transform')
 
         if y_names:
