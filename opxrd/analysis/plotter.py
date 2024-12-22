@@ -31,7 +31,7 @@ class DatabaseAnalyser(TableAnalyser):
 
         for letter, ax, database in zip(lower_alphabet, axes, self.databases):
             patterns = database.patterns[:limit_patterns]
-            data = [p.get_pattern_data(apply_standardization=False) for p in patterns]
+            data = [p.get_pattern_data() for p in patterns]
 
             for x, y in data:
                 y = y/np.max(y)
@@ -101,24 +101,26 @@ class DatabaseAnalyser(TableAnalyser):
             xf, yf = compute_standardized_fourier(x, y)
             yf_list.append(yf)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+        kwargs = {} if len(y_list) <= 1 else {'linewidth': 0.5}
+
 
         for y in y_list:
-            ax1.plot(x, y)
+            ax1.plot(x, y, **kwargs)
         ax1.set_xlabel(r'$2\theta$')
         ax1.set_ylabel(r'$I(2\theta)$')
         ax1.set_title('Original')
 
         for yf in yf_list:
             xf, yf = xf[np.where(xf < 2.5)], yf[np.where(xf < 2.5)]
-            ax2.plot(xf, yf, label='Fourier Transform magnitude')
+            ax2.plot(xf, yf, label='Fourier Transform magnitude', **kwargs)
         ax2.set_xlabel('Frequency k')
         ax2.set_ylabel('Magnitude |F(k)|')
         ax2.set_yscale(f'log')
         ax2.set_title('Fourier Transform')
 
         if y_names:
-            ax1.legend(y_names, ncol=2, loc='upper right')
-            ax2.legend(y_names, ncol=2, loc='upper right')
+            ax1.legend(y_names, ncol=2, loc='upper right',fontsize=8)
+            ax2.legend(y_names, ncol=2, loc='upper right',fontsize=8)
 
         if figname:
             plt.savefig(os.path.join(self.output_dirpath, figname))
@@ -128,7 +130,7 @@ class DatabaseAnalyser(TableAnalyser):
 
 
     def plot_effective_components(self, use_fractions : bool = True):
-        print_text(r'Cumulative explained variance ratio $v$ over components '
+        print_text(r'---> Cumulative explained variance ratio $v$ over components '
                         r'|  $v =  \frac{\sum_i \lambda_i}{\sum^n_{j=1} \lambda_j}$')
 
         for db_num, db in enumerate(self.databases):
@@ -156,7 +158,7 @@ class DatabaseAnalyser(TableAnalyser):
 
         plt.xscale(f'log')
         plt.ylabel(f'Cumulative explained variance ratio $V$')
-        plt.legend(loc='lower right')
+        plt.legend(loc='lower right', ncols=2)
         plt.savefig(os.path.join(self.output_dirpath, f'ALL_effective_components.png'))
 
         plt.show()
