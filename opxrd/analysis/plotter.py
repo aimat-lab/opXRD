@@ -112,7 +112,7 @@ class DatabaseAnalyser(TableAnalyser):
         for yf in yf_list:
             xf, yf = xf[np.where(xf < 2.5)], yf[np.where(xf < 2.5)]
             ax2.plot(xf, yf, label='Fourier Transform magnitude', **kwargs)
-        ax2.set_xlabel('Frequency k $deg^{-1}$')
+        ax2.set_xlabel('Frequency k Value/$deg^{-1}$')
         ax2.set_ylabel('Magnitude |F(k)|')
         ax2.set_yscale(f'log')
         ax2.set_title('Fourier Transform')
