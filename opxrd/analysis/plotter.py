@@ -42,7 +42,7 @@ class DatabaseAnalyser(TableAnalyser):
         fig.supxlabel(r'$2\theta$ [$^\circ$]', ha='center')
 
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dirpath, f'ALL_pattern_multiplot.png'))
+        plt.savefig(os.path.join(self.output_dirpath, f'combined.png'))
         plt.show()
 
 
@@ -135,39 +135,45 @@ class DatabaseAnalyser(TableAnalyser):
         print_text(r'---> Cumulative explained variance ratio $v$ over components '
                         r'|  $v =  \frac{\sum_i \lambda_i}{\sum^n_{j=1} \lambda_j}$')
 
-        for db_num, db in enumerate(self.databases):
-            print(f'[Debug]: Performing PCA for {db.name} | No. patterns = {len(db.patterns)}')
-            std_num_entries = 512
+        half = len(self.databases) // 2
+        fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(10, 5))
+        letters = ['a', 'b']
 
-            max_components = min(len(db.patterns), std_num_entries)
-            standardized_intensities = np.array([p.get_pattern_data(num_entries=std_num_entries)[1] for p in db.patterns])
-            pca = PCA(n_components=max_components)
-            pca.fit_transform(standardized_intensities)
+        for i, ax in enumerate(axes):
+            dbs = self.databases[half * i: half * (i + 1)]
+            for db in dbs:
+                print(f'[Debug]: Performing PCA for {db.name} | No. patterns = {len(db.patterns)}')
+                std_num_entries = 512
 
-            cumulative_explained_var = []
-            x_axis = np.linspace(0, 1, num=max_components) if use_fractions else range(0, max_components)
-            for x in x_axis:
-                n_comp = int(x * max_components) if use_fractions else x
-                cvar = np.sum(pca.explained_variance_ratio_[:n_comp])
-                cumulative_explained_var.append(cvar)
-            plt.plot(x_axis, cumulative_explained_var, label=db.name)
+                max_components = min(len(db.patterns), std_num_entries)
+                standardized_intensities = np.array(
+                    [p.get_pattern_data(num_entries=std_num_entries)[1] for p in db.patterns])
+                pca = PCA(n_components=max_components)
+                pca.fit_transform(standardized_intensities)
 
+                cumulative_explained_var = []
+                x_axis = np.linspace(0, 1, num=max_components) if use_fractions else range(0, max_components)
+                for x in x_axis:
+                    n_comp = int(x * max_components) if use_fractions else x
+                    cvar = np.sum(pca.explained_variance_ratio_[:n_comp])
+                    cumulative_explained_var.append(cvar)
 
-        if use_fractions:
-            plt.xlabel(f'Fraction of max. No. components')
-        else:
-            plt.xlabel(f'No. components')
+                ax.plot(x_axis, cumulative_explained_var, label=db.name)
+            ax.legend(loc='lower right', ncols=2, fontsize='small')
+            ax.set_title(f"{letters[i]})", loc='left')
+            ax.set_xscale(f'log')
+            xlabel = 'Fraction of maximal No. components' if use_fractions else 'No. components'
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(r'Cumulative explained variance ratio $v$')
 
-        plt.xscale(f'log')
-        plt.ylabel(f'Cumulative explained variance ratio $V$')
-        plt.legend(loc='lower right', ncols=2)
+        plt.tight_layout()
         plt.savefig(os.path.join(self.output_dirpath, f'ALL_effective_components.png'))
-
         plt.show()
+
 
 
     def plot_histogram(self, attach_colorbar : bool = False):
         print_text(f'---> Histogram of general information on opXRD')
-        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'), attach_colorbar=attach_colorbar)
+        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'histogram.png'), attach_colorbar=attach_colorbar)
 
 
