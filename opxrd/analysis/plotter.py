@@ -43,50 +43,45 @@ class DatabaseAnalyser(TableAnalyser):
         plt.show()
 
 
-    @staticmethod
-    def plot_reference_fourier(b1: float, b2: float, b3 : float):
-        print_text(r'---> Fourier transform of a pair of gaussians $I(x) = e^{{-0.5(x-b)^2/c}$')
+    @classmethod
+    def plot_reference_fourier(cls, b1: float, b2: float, b3 : float, add_noise : bool):
+        msg = r'---> Fourier transform of gaussians of the form $I(x) = e^{{-0.5(x-b)^2/c}$'
+        if add_noise:
+            msg += ' with added noise'
 
         c1, c2 = 0.1, 0.2
-        x = np.linspace(0, 180, num=1000)
+        x = np.linspace(0, 180, num=500)
+
         y = 5 * np.exp(-1 / 2 * (x - b1) ** 2 / c1) + np.exp(-1 / 2 * (x - b2) ** 2 / c2) + 2* np.exp(-1 / 2 * (x - b3) ** 2 / 0.1)
-        xf, yf = compute_fourier(x, y)
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+        if add_noise:
+            y += 0.2* np.random.normal(0, 1, x.shape)
 
-        # Gaussian plot
-        ax1.plot(x, y, label='Original Gaussian')
-        ax1.set_xlabel('x')
-        ax1.set_ylabel('Amplitude')
-        ax1.set_title('Original Gaussian')
-
-        # Fourier Transform plot
-        ax2.plot(xf, yf, label='Fourier Transform', color='r')
-        ax2.set_xlabel('Frequency (Hz)')
-        ax2.set_ylabel('|F(k)|')
-        # ax2.set_yscale('log')
-        ax2.set_title('Fourier Transform')
-
-        plt.tight_layout()
-        plt.show()
+        cls.fourier_plots(x, [y], msg=msg, names=[])
 
 
     def plot_opxrd_fourier(self):
+        x, _ = self.databases[0].patterns[0].get_pattern_data()
+        y_list = []
         for db in self.databases:
-            fig, ax = plt.subplots(figsize=(10, 4), dpi=300)
-
             db_intensities = [p.get_pattern_data()[1] for p in db.patterns]
-            intensity_sum = np.sum(db_intensities, axis=0)
-            x, _ = db.patterns[0].get_pattern_data()
-            xf, yf = compute_fourier(x, intensity_sum)
-            plt.plot(xf, yf)
+            summed_intensities = np.sum(db_intensities, axis=0)
+            normalized_sums = summed_intensities / np.max(summed_intensities)
+            y_list.append(normalized_sums)
+        self.fourier_plots(x, y_list, msg='---> Fourier transform of summed up opXRD patterns', names=[db.name for db in self.databases])
 
-            ax.set_title(f'{db.name} patterns summed up fourier transform ' +
-                         r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
-            ax.set_xlabel(r'k [deg$^{−1}$]')
-            ax.set_ylabel('l|F($k$)| (a.u.)')
-
-            plt.savefig(os.path.join(self.output_dirpath, f'{db.name}_fourier.png'))
-            plt.show()
+            #
+            #
+            #
+            # xf, yf = compute_fourier(x, summed_intensities)
+            # plt.plot(xf, yf)
+            #
+            # ax.set_title(f'{db.name} patterns summed up fourier transform ' +
+            #              r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
+            # ax.set_xlabel(r'k [deg$^{−1}$]')
+            # ax.set_ylabel('l|F($k$)| (a.u.)')
+            #
+            # plt.savefig(os.path.join(self.output_dirpath, f'{db.name}_fourier.png'))
+            # plt.show()
 
 
     def plot_effective_components(self, use_fractions : bool = True):
@@ -126,6 +121,42 @@ class DatabaseAnalyser(TableAnalyser):
     def plot_histogram(self, attach_colorbar : bool = False):
         print_text(f'---> Histogram of general information on opXRD')
         self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'), attach_colorbar=attach_colorbar)
+
+
+    @classmethod
+    def fourier_plots(cls, x, y_list : list, msg : str, names : list[str]):
+        if not y_list:
+            raise ValueError('No y data provided for Fourier Transform plot')
+
+        print_text(msg)
+        xf, _ = compute_fourier(x, y_list[0])
+        yf_list = []
+        for y in y_list:
+            xf, yf = compute_fourier(x, y)
+            yf_list.append(yf)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+
+        # Gaussian plot
+        for y in y_list:
+            ax1.plot(x, y)
+        ax1.set_xlabel(r'$2\theta$')
+        ax1.set_ylabel('I(x)')
+        ax1.set_title('Original')
+
+        # Fourier Transform plot
+        for yf in yf_list:
+            ax2.plot(xf, yf, label='Fourier Transform magnitude')
+        ax2.set_xlabel('Frequency k')
+        ax2.set_ylabel('Magnitude |F(k)|')
+        # ax2.set_yscale('log')
+        ax2.set_title('Fourier Transform')
+
+        if names:
+            ax1.legend(names)
+            ax2.legend(names)
+
+        plt.tight_layout()
+        plt.show()
 
 
 if __name__ == "__main__":
