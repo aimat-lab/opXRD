@@ -48,6 +48,7 @@ class DatabaseAnalyser(TableAnalyser):
 
     def plot_reference_fourier(self, b1: float, b2: float, b3 : float, add_noise : bool):
         msg = r'---> Fourier transform of gaussians of the form $I(x) = e^{-0.5(x-b)^2/c}$'
+
         if add_noise:
             msg += ' with added noise'
 
@@ -60,6 +61,8 @@ class DatabaseAnalyser(TableAnalyser):
         y = y/np.max(y)
 
         self._fourier_plots(x, [y], msg=msg, figname='reference_fourier.png')
+        print_text(r'$f(x) = \delta(x-a_1)+\delta(x-a_2) \implies \hat{f}(k) = e^{ika_1} + e^{ika_2}$  <br />'
+                   r'$|\hat{f}(k)| = 2 | \sin(k\Delta a/2)|$, $\Delta a = a_1 - a_2$')
 
 
     def plot_opxrd_fourier(self, combine_plots : bool = True, filter_dbs : Optional[str] = None, n_entries : int = 512):
@@ -82,7 +85,7 @@ class DatabaseAnalyser(TableAnalyser):
 
         if combine_plots:
             x = np.linspace(0, 90, num=n_entries)
-            msg = f'---> Fourier transform of summed up opXRD patterns | Length of intensity array = {n_entries}'
+            msg = f'---> Fourier transform of summed up patterns combined in single figure  | Length of intensity array = {n_entries}'
             y_names = [db.name for db in databases]
             self._fourier_plots(x, y_list, msg=msg, y_names=y_names, figname='ALL_fourier.png')
 
@@ -106,12 +109,11 @@ class DatabaseAnalyser(TableAnalyser):
         ax1.set_title('Original')
 
         for yf in yf_list:
+            xf, yf = xf[np.where(xf < 2.5)], yf[np.where(xf < 2.5)]
             ax2.plot(xf, yf, label='Fourier Transform magnitude')
         ax2.set_xlabel('Frequency k')
         ax2.set_ylabel('Magnitude |F(k)|')
         ax2.set_yscale(f'log')
-        ax2.set_xlim(0, 2.5)
-        ax2.set_ylim(1e-2, 1)  # Set the y-limits
         ax2.set_title('Fourier Transform')
 
         if y_names:
