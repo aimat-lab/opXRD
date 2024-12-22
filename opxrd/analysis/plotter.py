@@ -118,9 +118,10 @@ class DatabaseAnalyser(TableAnalyser):
 
         for db_num, db in enumerate(self.databases):
             print(f'[Debug]: Performing PCA for {db.name} | No. patterns = {len(db.patterns)}')
+            std_num_entries = 512
 
-            max_components = min(len(db.patterns), XrdPattern.std_num_entries())
-            standardized_intensities = np.array([p.get_pattern_data()[1] for p in db.patterns])
+            max_components = min(len(db.patterns), std_num_entries)
+            standardized_intensities = np.array([p.get_pattern_data(num_entries=std_num_entries)[1] for p in db.patterns])
             pca = PCA(n_components=max_components)
             pca.fit_transform(standardized_intensities)
 
