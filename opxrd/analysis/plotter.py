@@ -101,7 +101,7 @@ class DatabaseAnalyser(TableAnalyser):
             xf, yf = compute_standardized_fourier(x, y)
             yf_list.append(yf)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4), dpi=200)
-        kwargs = {} if len(y_list) <= 1 else {'linewidth': 0.5}
+        kwargs = {} if len(y_list) <= 1 else {'linewidth': 0.5, 'alpha': 0.75}
 
 
         for y in y_list:
