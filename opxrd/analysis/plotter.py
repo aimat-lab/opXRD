@@ -43,25 +43,30 @@ class DatabaseAnalyser(TableAnalyser):
         plt.show()
 
     def plot_reference_fourier(self, b1: float, b2: float, b3 : float, add_noise : bool):
-        msg = r'---> Fourier transform of gaussians of the form $I(x) = e^{{-0.5(x-b)^2/c}$'
+        msg = r'---> Fourier transform of gaussians of the form $I(x) = e^{-0.5(x-b)^2/c}$'
         if add_noise:
             msg += ' with added noise'
 
         c1, c2 = 0.1, 0.2
         x = np.linspace(0, 180, num=500)
 
-        y = 5 * np.exp(-1 / 2 * (x - b1) ** 2 / c1) + np.exp(-1 / 2 * (x - b2) ** 2 / c2) + 2* np.exp(-1 / 2 * (x - b3) ** 2 / 0.1)
+        y = 5 * np.exp(-1 / 2 * (x - b1) ** 2 / c1) + 0.75*np.exp(-1 / 2 * (x - b2) ** 2 / c2) + 0* np.exp(-1 / 2 * (x - b3) ** 2 / 0.1)
         if add_noise:
             y += 0.2* np.random.normal(0, 1, x.shape)
 
         self._fourier_plots(x, [y], msg=msg, figname='reference_fourier.png')
 
 
-    def plot_opxrd_fourier(self, combine_plots : bool = True):
-        x, _ = self.databases[0].patterns[0].get_pattern_data()
+    def plot_opxrd_fourier(self, combine_plots : bool = True, filter_dbs : Optional[str] = None):
+        n_entries = 512
         y_list = []
-        for db in self.databases:
-            db_intensities = [p.get_pattern_data()[1] for p in db.patterns]
+
+        databases = self.databases
+        if filter_dbs:
+            databases = [db for db in self.databases if filter_dbs.lower() in db.name.lower()]
+        for db in databases:
+            x, _ = db.patterns[0].get_pattern_data(num_entries=n_entries)
+            db_intensities = [p.get_pattern_data(num_entries=n_entries)[1] for p in db.patterns]
             summed_intensities = np.sum(db_intensities, axis=0)
             normalized_sums = summed_intensities / np.max(summed_intensities)
             if not combine_plots:
@@ -71,6 +76,7 @@ class DatabaseAnalyser(TableAnalyser):
                 y_list.append(normalized_sums)
 
         if combine_plots:
+            x = np.linspace(0, 180, num=n_entries)
             self._fourier_plots(x, y_list, msg='---> Fourier transform of summed up opXRD patterns',
                                 y_names=[db.name for db in self.databases],
                                 figname='ALL_fourier.png')
