@@ -1,5 +1,6 @@
 import math
 import os
+from typing import Optional
 
 import numpy as np
 from matplotlib import pyplot as plt
@@ -8,8 +9,7 @@ from sklearn.decomposition import PCA
 from opxrd.analysis.tables import TableAnalyser
 from opxrd.analysis.tools import compute_fourier, print_text
 from xrdpattern.pattern import XrdPattern
-
-
+from numpy.typing import NDArray
 # -----------------------------------------
 
 class DatabaseAnalyser(TableAnalyser):
@@ -42,9 +42,7 @@ class DatabaseAnalyser(TableAnalyser):
         plt.savefig(os.path.join(self.output_dirpath, f'ALL_pattern_multiplot.png'))
         plt.show()
 
-
-    @classmethod
-    def plot_reference_fourier(cls, b1: float, b2: float, b3 : float, add_noise : bool):
+    def plot_reference_fourier(self, b1: float, b2: float, b3 : float, add_noise : bool):
         msg = r'---> Fourier transform of gaussians of the form $I(x) = e^{{-0.5(x-b)^2/c}$'
         if add_noise:
             msg += ' with added noise'
@@ -56,32 +54,62 @@ class DatabaseAnalyser(TableAnalyser):
         if add_noise:
             y += 0.2* np.random.normal(0, 1, x.shape)
 
-        cls.fourier_plots(x, [y], msg=msg, names=[])
+        self._fourier_plots(x, [y], msg=msg, figname='reference_fourier.png')
 
 
-    def plot_opxrd_fourier(self):
+    def plot_opxrd_fourier(self, combine_plots : bool = True):
         x, _ = self.databases[0].patterns[0].get_pattern_data()
         y_list = []
         for db in self.databases:
             db_intensities = [p.get_pattern_data()[1] for p in db.patterns]
             summed_intensities = np.sum(db_intensities, axis=0)
             normalized_sums = summed_intensities / np.max(summed_intensities)
-            y_list.append(normalized_sums)
-        self.fourier_plots(x, y_list, msg='---> Fourier transform of summed up opXRD patterns', names=[db.name for db in self.databases])
+            if not combine_plots:
+                self._fourier_plots(x, [normalized_sums], msg=f'---> Fourier transform of summed {db.name} patterns',
+                                    figname=f'{db.name}_fourier.png')
+            else:
+                y_list.append(normalized_sums)
 
-            #
-            #
-            #
-            # xf, yf = compute_fourier(x, summed_intensities)
-            # plt.plot(xf, yf)
-            #
-            # ax.set_title(f'{db.name} patterns summed up fourier transform ' +
-            #              r'$F(k)=\int d(2\theta) I(2\theta) e^{-ik2\theta}$')
-            # ax.set_xlabel(r'k [deg$^{−1}$]')
-            # ax.set_ylabel('l|F($k$)| (a.u.)')
-            #
-            # plt.savefig(os.path.join(self.output_dirpath, f'{db.name}_fourier.png'))
-            # plt.show()
+        if combine_plots:
+            self._fourier_plots(x, y_list, msg='---> Fourier transform of summed up opXRD patterns',
+                                y_names=[db.name for db in self.databases],
+                                figname='ALL_fourier.png')
+
+
+    def _fourier_plots(self, x, y_list: list[NDArray], msg: str, figname: str, y_names: Optional[list[str]] = None):
+        if len(y_list) == 0:
+            raise ValueError('No y data provided for Fourier Transform plot')
+
+        print_text(msg)
+        xf, _ = compute_fourier(x, y_list[0])
+        yf_list = []
+        for y in y_list:
+            xf, yf = compute_fourier(x, y)
+            yf_list.append(yf)
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+
+        for y in y_list:
+            ax1.plot(x, y)
+        ax1.set_xlabel(r'$2\theta$')
+        ax1.set_ylabel('I(x)')
+        ax1.set_title('Original')
+
+        for yf in yf_list:
+            ax2.plot(xf, yf, label='Fourier Transform magnitude')
+        ax2.set_xlabel('Frequency k')
+        ax2.set_ylabel('Magnitude |F(k)|')
+        ax2.set_yscale(f'log')
+        ax2.set_title('Fourier Transform')
+
+        if y_names:
+            ax1.legend(y_names, ncol=2)
+            ax2.legend(y_names, ncol=2)
+
+        if figname:
+            plt.savefig(os.path.join(self.output_dirpath, figname))
+
+        plt.tight_layout()
+        plt.show()
 
 
     def plot_effective_components(self, use_fractions : bool = True):
@@ -123,47 +151,3 @@ class DatabaseAnalyser(TableAnalyser):
         self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'ALL_histogram.png'), attach_colorbar=attach_colorbar)
 
 
-    @classmethod
-    def fourier_plots(cls, x, y_list : list, msg : str, names : list[str]):
-        if not y_list:
-            raise ValueError('No y data provided for Fourier Transform plot')
-
-        print_text(msg)
-        xf, _ = compute_fourier(x, y_list[0])
-        yf_list = []
-        for y in y_list:
-            xf, yf = compute_fourier(x, y)
-            yf_list.append(yf)
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
-
-        # Gaussian plot
-        for y in y_list:
-            ax1.plot(x, y)
-        ax1.set_xlabel(r'$2\theta$')
-        ax1.set_ylabel('I(x)')
-        ax1.set_title('Original')
-
-        # Fourier Transform plot
-        for yf in yf_list:
-            ax2.plot(xf, yf, label='Fourier Transform magnitude')
-        ax2.set_xlabel('Frequency k')
-        ax2.set_ylabel('Magnitude |F(k)|')
-        # ax2.set_yscale('log')
-        ax2.set_title('Fourier Transform')
-
-        if names:
-            ax1.legend(names)
-            ax2.legend(names)
-
-        plt.tight_layout()
-        plt.show()
-
-
-if __name__ == "__main__":
-    from opxrd.wrapper import OpXRD
-    smoltest_dirpath = '/home/daniel/aimat/data/opXRD/test_smol'
-    bigtest_dirpath = '/home/daniel/aimat/data/opXRD/test'
-    test_databases = OpXRD.load_project_list(root_dirpath=smoltest_dirpath)
-
-    analyser = DatabaseAnalyser(databases=test_databases, output_dirpath='/tmp/opxrd_analysis')
-    analyser.plot_reference_fourier(b1=60, b2=80)
