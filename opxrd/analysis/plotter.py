@@ -94,7 +94,6 @@ class DatabaseAnalyser(TableAnalyser):
         if len(y_list) == 0:
             raise ValueError('No y data provided for Fourier Transform plot')
 
-        print_text(msg)
         xf, _ = compute_standardized_fourier(x, y_list[0])
         yf_list = []
         for y in y_list:
@@ -117,6 +116,8 @@ class DatabaseAnalyser(TableAnalyser):
         ax2.set_ylabel('Magnitude |F(k)|')
         ax2.set_yscale(f'log')
         ax2.set_title('Fourier Transform')
+
+        fig.suptitle(msg)
 
         if y_names:
             ax1.legend(y_names, ncol=2, loc='upper right',fontsize=8)
