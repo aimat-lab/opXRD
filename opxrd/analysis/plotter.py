@@ -4,15 +4,17 @@ from typing import Optional
 
 import numpy as np
 from matplotlib import pyplot as plt
+from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 
 from opxrd.analysis.tables import TableAnalyser
-from opxrd.analysis.tools import compute_fourier, print_text
-from xrdpattern.pattern import XrdPattern
-from numpy.typing import NDArray
+from opxrd.analysis.tools import compute_standardized_fourier, print_text
+
+
 # -----------------------------------------
 
 class DatabaseAnalyser(TableAnalyser):
+
     def plot_in_single(self, limit_patterns: int):
         lower_alphabet = [chr(i) for i in range(97, 123)]
         explanation = [f'{letter}:{db.name}' for letter, db in zip(lower_alphabet, self.databases)]
@@ -43,17 +45,19 @@ class DatabaseAnalyser(TableAnalyser):
         plt.savefig(os.path.join(self.output_dirpath, f'ALL_pattern_multiplot.png'))
         plt.show()
 
+
     def plot_reference_fourier(self, b1: float, b2: float, b3 : float, add_noise : bool):
         msg = r'---> Fourier transform of gaussians of the form $I(x) = e^{-0.5(x-b)^2/c}$'
         if add_noise:
             msg += ' with added noise'
 
-        c1, c2 = 0.1, 0.2
-        x = np.linspace(0, 180, num=500)
+        c1, c2 = 0.04, 0.04
+        x = np.linspace(0, 90, num=1000)
 
         y = 5 * np.exp(-1 / 2 * (x - b1) ** 2 / c1) + 0.75*np.exp(-1 / 2 * (x - b2) ** 2 / c2) + 0* np.exp(-1 / 2 * (x - b3) ** 2 / 0.1)
         if add_noise:
             y += 0.2* np.random.normal(0, 1, x.shape)
+        y = y/np.max(y)
 
         self._fourier_plots(x, [y], msg=msg, figname='reference_fourier.png')
 
@@ -71,15 +75,16 @@ class DatabaseAnalyser(TableAnalyser):
             normalized_sums = summed_intensities / np.max(summed_intensities)
 
             if not combine_plots:
-                self._fourier_plots(x, [normalized_sums], msg=f'---> Fourier transform of summed {db.name} patterns',figname=f'{db.name}_fourier.png')
+                msg = f'---> Fourier transform of summed {db.name} patterns | Length of intensity array = {n_entries}'
+                self._fourier_plots(x, [normalized_sums], msg=msg, figname=f'{db.name}_fourier.png')
             else:
                 y_list.append(normalized_sums)
 
         if combine_plots:
-            x = np.linspace(0, 180, num=n_entries)
-            self._fourier_plots(x, y_list, msg='---> Fourier transform of summed up opXRD patterns',
-                                y_names=[db.name for db in self.databases],
-                                figname='ALL_fourier.png')
+            x = np.linspace(0, 90, num=n_entries)
+            msg = f'---> Fourier transform of summed up opXRD patterns | Length of intensity array = {n_entries}'
+            y_names = [db.name for db in databases]
+            self._fourier_plots(x, y_list, msg=msg, y_names=y_names, figname='ALL_fourier.png')
 
 
     def _fourier_plots(self, x, y_list: list[NDArray], msg: str, figname: str, y_names: Optional[list[str]] = None):
@@ -87,30 +92,31 @@ class DatabaseAnalyser(TableAnalyser):
             raise ValueError('No y data provided for Fourier Transform plot')
 
         print_text(msg)
-        xf, _ = compute_fourier(x, y_list[0])
+        xf, _ = compute_standardized_fourier(x, y_list[0])
         yf_list = []
         for y in y_list:
-            xf, yf = compute_fourier(x, y)
+            xf, yf = compute_standardized_fourier(x, y)
             yf_list.append(yf)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
         for y in y_list:
             ax1.plot(x, y)
         ax1.set_xlabel(r'$2\theta$')
-        ax1.set_ylabel('I(x)')
+        ax1.set_ylabel(r'$I(2\theta)$')
         ax1.set_title('Original')
 
         for yf in yf_list:
             ax2.plot(xf, yf, label='Fourier Transform magnitude')
         ax2.set_xlabel('Frequency k')
         ax2.set_ylabel('Magnitude |F(k)|')
-        # ax2.set_yscale(f'log')
+        ax2.set_yscale(f'log')
         ax2.set_xlim(0, 2.5)
+        ax2.set_ylim(1e-2, 1)  # Set the y-limits
         ax2.set_title('Fourier Transform')
 
         if y_names:
-            ax1.legend(y_names, ncol=2)
-            ax2.legend(y_names, ncol=2)
+            ax1.legend(y_names, ncol=2, loc='upper right')
+            ax2.legend(y_names, ncol=2, loc='upper right')
 
         if figname:
             plt.savefig(os.path.join(self.output_dirpath, figname))
