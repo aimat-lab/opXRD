@@ -44,12 +44,12 @@ class DatabaseAnalyser(TableAnalyser):
 
 
     @staticmethod
-    def plot_reference_fourier(b1: float = 0.3, b2: float = 0.5):
+    def plot_reference_fourier(b1: float, b2: float, b3 : float):
         print_text(r'---> Fourier transform of a pair of gaussians $I(x) = e^{{-0.5(x-b)^2/c}$')
 
         c1, c2 = 0.1, 0.2
         x = np.linspace(0, 180, num=1000)
-        y = 5 * np.exp(-1 / 2 * (x - b1) ** 2 / c1) + np.exp(-1 / 2 * (x - b2) ** 2 / c2)
+        y = 5 * np.exp(-1 / 2 * (x - b1) ** 2 / c1) + np.exp(-1 / 2 * (x - b2) ** 2 / c2) + 2* np.exp(-1 / 2 * (x - b3) ** 2 / 0.1)
         xf, yf = compute_fourier(x, y)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
 
@@ -63,6 +63,7 @@ class DatabaseAnalyser(TableAnalyser):
         ax2.plot(xf, yf, label='Fourier Transform', color='r')
         ax2.set_xlabel('Frequency (Hz)')
         ax2.set_ylabel('|F(k)|')
+        # ax2.set_yscale('log')
         ax2.set_title('Fourier Transform')
 
         plt.tight_layout()
