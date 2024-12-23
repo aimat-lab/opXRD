@@ -164,10 +164,11 @@ class DatabaseAnalyser(TableAnalyser):
             ax.set_xscale(f'log')
             xlabel = 'Fraction of maximal No. components' if use_fractions else 'No. components'
             ax.set_xlabel(xlabel)
-            ax.set_ylabel(r'Cumulative explained variance ratio $v$')
+            ax.set_ylabel(r'Cumulative explained variance ratio')
 
         plt.tight_layout()
-        plt.savefig(os.path.join(self.output_dirpath, f'ALL_effective_components.png'))
+        figname = 'component_fractions.png' if use_fractions else 'components.png'
+        plt.savefig(os.path.join(self.output_dirpath,figname))
         plt.show()
 
 

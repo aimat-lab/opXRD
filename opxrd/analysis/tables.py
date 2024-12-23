@@ -25,6 +25,8 @@ class TableAnalyser:
         print_text(f'---> Overview of label fractions per contribution')
         table_data = []
         for d in self.databases:
+            table_data.append(len(d.patterns))
+
             label_counts = {l: 0 for l in LabelType}
             patterns = d.patterns
             for l in LabelType:
@@ -34,7 +36,7 @@ class TableAnalyser:
             db_percentages = [label_counts[l] / len(patterns) for l in LabelType]
             table_data.append(db_percentages)
 
-        col_headers = [label.name for label in LabelType]
+        col_headers = ['No. patterns'] +  [label.name for label in LabelType]
         row_headers = [db.name for db in self.databases]
 
         table = tabulate(table_data, headers=col_headers, showindex=row_headers, tablefmt='psql')
