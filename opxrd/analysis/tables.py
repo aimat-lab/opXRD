@@ -37,8 +37,10 @@ class TableAnalyser:
         col_headers = ['No. patterns'] +  [label.name for label in LabelType]
         row_headers = [db.name for db in self.databases]
 
+
         table = tabulate(table_data, headers=col_headers, showindex=row_headers, tablefmt='psql')
         print(table)
+        print(f'total patterns = {sum([len(d.patterns) for d in self.databases])}')
 
 
     def print_total_counts(self):
