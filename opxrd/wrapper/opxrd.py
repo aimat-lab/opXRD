@@ -116,4 +116,4 @@ class OpXRD(PatternDB):
 if __name__ == "__main__":
     smoltest_dirpath = '/home/daniel/aimat/data/opXRD/test_smol'
     test_dirpath = '/home/daniel/aimat/data/opXRD/test'
-    dbs = OpXRD.load_project_list(root_dirpath=test_dirpath)
+    opxrd_dbs = OpXRD.load_project_list(root_dirpath=test_dirpath)
