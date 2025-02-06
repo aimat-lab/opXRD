@@ -3,5 +3,16 @@ name: Workflows
 on: [push]
 
 jobs:
-  StdPyTests:
-    uses: Somerandomguy10111/actions/.github/workflows/stdpy.yml@main
+  ToxTests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aimat-lab/xrdpattern/.github/systemreqs@main
+      - uses: Somerandomguy10111/devops/actions/basepy@main
+      - uses: Somerandomguy10111/devops/actions/toxtests@main
+
+  Dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aimat-lab/xrdpattern/.github/systemreqs@main
+      - uses: Somerandomguy10111/devops/actions/basepy@main
+      - uses: Somerandomguy10111/devops/actions/deptry@main
