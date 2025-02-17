@@ -13,7 +13,6 @@ from xrdpattern.crystal import CrystalPhase
 from xrdpattern.pattern import PatternDB
 from xrdpattern.xrd import PowderExperiment, XrayInfo, XrdAnode
 
-
 # -------------------------------------------
 
 class OpXRDProcessor:

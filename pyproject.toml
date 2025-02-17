@@ -6,4 +6,4 @@ description = "Python API for opXRD database. See more at https://xrd.aimat.scie
 dependencies = ["holytools", "xrdpattern","scikit-learn"]
 
 [tool.setuptools.packages.find]
-include = ["opxrd"]
+include = ["opxrd*"]
