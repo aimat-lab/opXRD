@@ -2,6 +2,8 @@ import os
 import shutil
 import tempfile
 
+from xrdpattern.xrd import XrayInfo
+
 from processors.opxrd import OpXRDProcessor
 
 
@@ -18,31 +20,28 @@ class ContributionProcessor(OpXRDProcessor):
         db = self.get_db(dirname='coudert_hardiagon_0', suffixes=['json'])
         db.save(dirpath=os.path.join(self.final_dirpath, 'CNRS'))
 
-
     def parse_USC(self):
         db0 = self.get_db(dirname='hodge_alwen_0', xray_info=self.cu_xray)
         db1 = self.get_db(dirname='hodge_alwen_1', xray_info=self.cu_xray)
         merged = db0 + db1
         merged.save(dirpath=self.get_final_dirpath('USC'))
 
-
     def parse_LBNL(self):
-        # perovskite_db =  self.get_csv_db(dirname='sutter-fella_singh_0', orientation='horizontal')
-        # perovskite_db += self.get_csv_db(dirname='sutter-fella_kodalle_0', orientation='horizontal', suffixes=['dat','csv'])
-        # xray_info = XrayInfo(primary_wavelength=1.23984, secondary_wavelength=None)
-        # perovskite_db.set_xray(xray_info=xray_info)
-        # perovskite_db.save(dirpath=self.get_final_dirpath('LBNL','A_PEROVSKITES_1'))
-        #
-        # db_B = self.get_csv_db(dirname='sutter-fella_abdelsamie_0', orientation='horizontal')
-        # db_B.set_xray(xray_info=xray_info)
-        # db_B.save(dirpath=self.get_final_dirpath('LBNL','B_PEROVSKITES_2'))
-        #
-        # mn_sb_db = self.get_csv_db(dirname='sutter-fella_heymans_0', suffixes=['xlsx'], orientation='vertical')
-        # mn_sb_db.save(dirpath=self.get_final_dirpath('LBNL','C_MnSbO_annealing'))
+        perovskite_db =  self.get_csv_db(dirname='sutter-fella_singh_0', orientation='horizontal')
+        perovskite_db += self.get_csv_db(dirname='sutter-fella_kodalle_0', orientation='horizontal', suffixes=['dat','csv'])
+        xray_info = XrayInfo(primary_wavelength=1.23984, secondary_wavelength=None)
+        perovskite_db.set_xray(xray_info=xray_info)
+        perovskite_db.save(dirpath=self.get_final_dirpath('LBNL','LBNL-A'))
+
+        db_B = self.get_csv_db(dirname='sutter-fella_abdelsamie_0', orientation='horizontal')
+        db_B.set_xray(xray_info=xray_info)
+        db_B.save(dirpath=self.get_final_dirpath('LBNL','LBNL-B'))
+
+        mn_sb_db = self.get_csv_db(dirname='sutter-fella_heymans_0', suffixes=['xlsx'], orientation='vertical')
+        mn_sb_db.save(dirpath=self.get_final_dirpath('LBNL','LBNL-C'))
 
         uio_db = self.get_csv_db(dirname='sutter-fella_hu_0', orientation='horizontal')
-        uio_db.save(dirpath=self.get_final_dirpath('LBNL','D_UiO_compounds'))
-
+        uio_db.save(dirpath=self.get_final_dirpath('LBNL','LBNL-D'))
 
     def parse_EMPA(self):
         db0 = self.get_db(dirname='siol_wieczorek_0', xray_info=self.cu_xray)
@@ -50,18 +49,16 @@ class ContributionProcessor(OpXRDProcessor):
         merged = db0 + db1
         merged.save(dirpath=self.get_final_dirpath('EMPA'))
 
-
     def parse_IKFT(self):
         db = self.get_db(dirname='wolf_wolf_0', xray_info=self.cu_xray)
         db.save(dirpath=self.get_final_dirpath('IKFT'))
 
-
     def parse_HKUST(self):
         db = self.get_db(dirname='zhang_cao_0', use_cif_labels=True, suffixes=['txt'], xray_info=self.cu_xray)
-        db.save(dirpath=self.get_final_dirpath('HKUST','A_in_house'))
+        db.save(dirpath=self.get_final_dirpath('HKUST','HKUST-A'))
 
         db1 = self.get_db(dirname='zhang_cao_1', xray_info=self.cu_xray)
-        db1.save(dirpath=self.get_final_dirpath('HKUST', 'B_accumulated'))
+        db1.save(dirpath=self.get_final_dirpath('HKUST', 'HKUST-B'))
 
     # --------------------------------------------------------------------
 
