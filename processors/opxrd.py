@@ -5,12 +5,12 @@ from typing import Optional
 import pandas as pd
 
 from holytools.logging import LoggerFactory
-from special.tools.csv_label import get_powder_experiment, get_label_mapping
 from holytools.devtools import ModuleInspector
 from holytools.fsys import PathTools
 from holytools.logging.tools import log_execution
 from xrdpattern.crystal import CrystalPhase
 from xrdpattern.pattern import PatternDB
+from xrdpattern.tools.csv_label import get_powder_experiment, get_label_mapping
 from xrdpattern.xrd import PowderExperiment, XrayInfo, XrdAnode
 
 # -------------------------------------------

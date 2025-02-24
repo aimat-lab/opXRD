@@ -3,7 +3,6 @@ import shutil
 import tempfile
 
 from processors.opxrd import OpXRDProcessor
-from xrdpattern.xrd import XrayInfo
 
 
 # -------------------------------------------------------------
@@ -28,18 +27,18 @@ class ContributionProcessor(OpXRDProcessor):
 
 
     def parse_LBNL(self):
-        perovskite_db =  self.get_csv_db(dirname='sutter-fella_singh_0', orientation='horizontal')
-        perovskite_db += self.get_csv_db(dirname='sutter-fella_kodalle_0', orientation='horizontal', suffixes=['dat','csv'])
-        xray_info = XrayInfo(primary_wavelength=1.23984, secondary_wavelength=None)
-        perovskite_db.set_xray(xray_info=xray_info)
-        perovskite_db.save(dirpath=self.get_final_dirpath('LBNL','A_PEROVSKITES_1'))
-
-        db_B = self.get_csv_db(dirname='sutter-fella_abdelsamie_0', orientation='horizontal')
-        db_B.set_xray(xray_info=xray_info)
-        db_B.save(dirpath=self.get_final_dirpath('LBNL','B_PEROVSKITES_2'))
-
-        mn_sb_db = self.get_csv_db(dirname='sutter-fella_heymans_0', suffixes=['xlsx'], orientation='vertical')
-        mn_sb_db.save(dirpath=self.get_final_dirpath('LBNL','C_MnSbO_annealing'))
+        # perovskite_db =  self.get_csv_db(dirname='sutter-fella_singh_0', orientation='horizontal')
+        # perovskite_db += self.get_csv_db(dirname='sutter-fella_kodalle_0', orientation='horizontal', suffixes=['dat','csv'])
+        # xray_info = XrayInfo(primary_wavelength=1.23984, secondary_wavelength=None)
+        # perovskite_db.set_xray(xray_info=xray_info)
+        # perovskite_db.save(dirpath=self.get_final_dirpath('LBNL','A_PEROVSKITES_1'))
+        #
+        # db_B = self.get_csv_db(dirname='sutter-fella_abdelsamie_0', orientation='horizontal')
+        # db_B.set_xray(xray_info=xray_info)
+        # db_B.save(dirpath=self.get_final_dirpath('LBNL','B_PEROVSKITES_2'))
+        #
+        # mn_sb_db = self.get_csv_db(dirname='sutter-fella_heymans_0', suffixes=['xlsx'], orientation='vertical')
+        # mn_sb_db.save(dirpath=self.get_final_dirpath('LBNL','C_MnSbO_annealing'))
 
         uio_db = self.get_csv_db(dirname='sutter-fella_hu_0', orientation='horizontal')
         uio_db.save(dirpath=self.get_final_dirpath('LBNL','D_UiO_compounds'))
@@ -100,6 +99,5 @@ class ContributionProcessor(OpXRDProcessor):
 
 
 if __name__ == "__main__":
-    processor = ContributionProcessor(root_dirpath='/home/daniel/aimat/data/opXRD/')
-    processor.parse_all()
-    # processor.prepare_zips()
+    processor = ContributionProcessor(root_dirpath='/media/daniel/mirrors/xrd.aimat.science')
+    processor.parse_LBNL()
