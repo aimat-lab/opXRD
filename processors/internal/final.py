@@ -3,21 +3,21 @@ from logging import Logger
 from typing import Optional
 
 import pandas as pd
-
-from holytools.logging import LoggerFactory
 from holytools.devtools import ModuleInspector
 from holytools.fsys import PathTools
+from holytools.logging import LoggerFactory
 from xrdpattern.crystal import CrystalPhase
-from xrdpattern.pattern import PatternDB, XrdPattern
-from xrdpattern.tools.csv_label import get_powder_experiment, get_label_mapping
+from xrdpattern.pattern import PatternDB
 from xrdpattern.xrd import PowderExperiment, XrayInfo, XrdAnode
+
+from processors.internal.csv_label import get_powder_experiment, get_label_mapping
 
 # -------------------------------------------
 
-class OpXRDProcessor:
+class FinalProcessor:
     def __init__(self, root_dirpath : str):
         self.root_dirpath : str = root_dirpath
-        self.processed_dirpath : str = os.path.join(root_dirpath, 'processed')
+        self.processed_dirpath : str = os.path.join(root_dirpath, 'prepared')
         self.final_dirpath : str = os.path.join(root_dirpath, 'final')
         self.cu_xray : XrayInfo = XrdAnode.Cu.get_xray_info()
         self.logger : Logger = LoggerFactory.get_logger(name=__name__)
@@ -90,8 +90,8 @@ class OpXRDProcessor:
             phases = []
             for fname in cif_fnames:
                 cif_fpath = os.path.join(dirpath, fname)
-                attached_cif_content = OpXRDProcessor.read_file(fpath=cif_fpath)
-                crystal_phase = OpXRDProcessor.safe_cif_read(cif_content=attached_cif_content)
+                attached_cif_content = FinalProcessor.read_file(fpath=cif_fpath)
+                crystal_phase = FinalProcessor.safe_cif_read(cif_content=attached_cif_content)
                 phases.append(crystal_phase)
 
             phases = [p for p in phases if not p is None]

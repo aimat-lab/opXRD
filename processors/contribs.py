@@ -4,12 +4,11 @@ import tempfile
 
 from xrdpattern.xrd import XrayInfo
 
-from processors.opxrd import OpXRDProcessor
-
+from processors.internal.final import FinalProcessor
 
 # -------------------------------------------------------------
 
-class ContributionProcessor(OpXRDProcessor):
+class ContributionProcessor(FinalProcessor):
     def parse_INT(self):
         db0 = self.get_db(dirname='breitung_schweidler_0', suffixes=['raw'])
         db1 = self.get_db(dirname='breitung_schweidler_1', suffixes=['raw'])
