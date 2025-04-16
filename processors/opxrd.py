@@ -7,9 +7,8 @@ import pandas as pd
 from holytools.logging import LoggerFactory
 from holytools.devtools import ModuleInspector
 from holytools.fsys import PathTools
-from holytools.logging.tools import log_execution
 from xrdpattern.crystal import CrystalPhase
-from xrdpattern.pattern import PatternDB
+from xrdpattern.pattern import PatternDB, XrdPattern
 from xrdpattern.tools.csv_label import get_powder_experiment, get_label_mapping
 from xrdpattern.xrd import PowderExperiment, XrayInfo, XrdAnode
 
@@ -25,7 +24,6 @@ class OpXRDProcessor:
 
     # ---------------------------------------
     # Parsing individual contributions
-
 
     def parse_all(self):
         methods = ModuleInspector.get_methods(self)
@@ -62,7 +60,6 @@ class OpXRDProcessor:
     # ---------------------------------------
     # Parsing steps
 
-    @log_execution
     def attach_metadata(self, pattern_db : PatternDB, dirname : str):
         form_dirpath = os.path.join(self.processed_dirpath, dirname, 'form.txt')
         with open(form_dirpath, "r") as file:
@@ -84,8 +81,8 @@ class OpXRDProcessor:
         else:
             self.attach_csv_labels(pattern_db, contrib_dirpath=contrib_dirpath)
 
-    @log_execution
-    def attach_cif_labels(self, pattern_db : PatternDB):
+    @staticmethod
+    def attach_cif_labels(pattern_db : PatternDB):
         for fpath, patterns in pattern_db.fpath_dict.items():
             dirpath = os.path.dirname(fpath)
             cif_fnames = [fname for fname in os.listdir(dirpath) if PathTools.get_suffix(fname) == 'cif']
@@ -103,8 +100,8 @@ class OpXRDProcessor:
                 p.powder_experiment = powder_experiment
 
 
-    @log_execution
-    def attach_csv_labels(self, pattern_db : PatternDB, contrib_dirpath : str):
+    @staticmethod
+    def attach_csv_labels(pattern_db : PatternDB, contrib_dirpath : str):
         csv_fpath = os.path.join(contrib_dirpath, 'labels.csv')
 
         if not os.path.isfile(csv_fpath):
@@ -124,12 +121,11 @@ class OpXRDProcessor:
                 p.powder_experiment = powder_experiment
 
 
-    @log_execution
     def save(self, pattern_db : PatternDB, dirname : str):
         out_dirpath = os.path.join(self.final_dirpath, dirname)
         if not os.path.isdir(out_dirpath):
             os.makedirs(out_dirpath)
-        pattern_db.save(dirpath=out_dirpath, force_overwrite=True)
+        pattern_db.save(dirpath=out_dirpath)
 
     # -----------------------------
     # Helper methods
