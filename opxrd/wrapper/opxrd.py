@@ -5,9 +5,10 @@ import zipfile
 
 import requests
 from xrdpattern.pattern import PatternDB
-from holytools.userIO import TrackedInt
 
 from xrdpattern.pattern.db import patterdb_logger
+from opxrd.wrapper.tracked_int import TrackedInt
+
 
 # -----------------------------
 

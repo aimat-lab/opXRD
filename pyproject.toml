@@ -3,7 +3,9 @@ name = "opxrd"
 version = "0.1.0"
 authors = [{name = "Daniel Hollarek", email = "daniel.hollarek@googlemail.com"}]
 description = "Python API for opXRD database. See more at https://xrd.aimat.science/"
-dependencies = ["holytools", "xrdpattern","scikit-learn", 'numpy', 'requests', 'pandas', 'matplotlib', 'ase', 'ipython', 'tabulate']
+dependencies = ["xrdpattern","scikit-learn", 'numpy', 'requests', 'pandas', 'matplotlib', 'ase', 'ipython', 'tabulate'
+
+, "progressbar2", 'pymatgen']
 
 [tool.setuptools.packages.find]
 include = ["opxrd*"]

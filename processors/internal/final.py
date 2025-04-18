@@ -1,16 +1,16 @@
+import logging
 import os
 from logging import Logger
 from typing import Optional
 
 import pandas as pd
-from holytools.devtools import ModuleInspector
-from holytools.fsys import PathTools
-from holytools.logging import LoggerFactory
 from xrdpattern.crystal import CrystalStructure
+from xrdpattern.parsing.path_tools import PathTools
 from xrdpattern.pattern import PatternDB
 from xrdpattern.xrd import PowderExperiment, XrayInfo
 
 from processors.internal.csv_label import get_powder_experiment, get_label_mapping
+from processors.internal.module_inspector import ModuleInspector
 
 
 # -------------------------------------------
@@ -21,7 +21,8 @@ class FinalProcessor:
         self.processed_dirpath : str = os.path.join(root_dirpath, 'prepared')
         self.final_dirpath : str = os.path.join(root_dirpath, 'final')
         self.cu_xray : XrayInfo = XrayInfo.copper_xray()
-        self.logger : Logger = LoggerFactory.get_logger(name=__name__)
+        self.logger : Logger = logging.getLogger(name=__name__)
+        self.logger.level = logging.INFO
 
     # ---------------------------------------
     # Parsing individual contributions
