@@ -29,7 +29,7 @@ class TableAnalyser:
             patterns = d.patterns
             for l in LabelType:
                 for p in patterns:
-                    if p.has_label(label_type=l):
+                    if p.powder_experiment.has_label(label_type=l):
                         label_counts[l] += 1
             row = [len(d.patterns)] + [label_counts[l] / len(patterns) for l in LabelType]
             table_data.append(row)
@@ -47,7 +47,7 @@ class TableAnalyser:
         print_text(f'---> Total pattern counts in opXRD')
         num_total = len(self.joined_db.patterns)
 
-        labeled_patterns = [p for p in self.joined_db.patterns if p.is_labeled()]
+        labeled_patterns = [p for p in self.joined_db.patterns if p.powder_experiment.is_labeled()]
         num_labelel = len(labeled_patterns)
         print(f'Total number of patterns = {num_total}')
         print(f'Number of labeled patterns = {num_labelel}')

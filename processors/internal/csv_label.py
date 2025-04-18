@@ -2,9 +2,10 @@ import os
 from dataclasses import dataclass
 
 import pandas as pd
+from pymatgen.core import Lattice
 
-from xrdpattern.crystal import CrystalPhase
-from xrdpattern.tools.pathtools import PathTools
+from xrdpattern.crystal import CrystalStructure
+from xrdpattern.parsing.path_tools import PathTools
 from xrdpattern.xrd import PowderExperiment
 
 
@@ -16,10 +17,10 @@ class CsvLabel:
     phase_fraction : float
     spacegroup : int
 
-    def set_phase_properties(self, phase : CrystalPhase):
+    def set_phase_properties(self, phase : CrystalStructure):
         phase.spacegroup = self.spacegroup
-        phase.lengths = self.lengths
-        phase.angles = self.angles
+
+        phase.lattice = Lattice.from_parameters(*self.lengths, *self.angles)
         phase.chemical_composition = self.chemical_composition
         phase.phase_fraction = self.phase_fraction
 
@@ -27,7 +28,7 @@ class CsvLabel:
 def get_powder_experiment(pattern_fpath : str, contrib_dirpath : str, phases) -> PowderExperiment:
     data_dirpath = os.path.join(contrib_dirpath, 'data')
 
-    powder_experiment = PowderExperiment.make_empty(num_phases=2)
+    powder_experiment = PowderExperiment.make_empty()
     rel_path = os.path.relpath(pattern_fpath, start=data_dirpath)
     rel_path = standardize_path(rel_path)
 

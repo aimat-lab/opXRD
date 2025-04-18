@@ -1,9 +1,10 @@
 import os
 from dataclasses import dataclass
 
-from xrdpattern.crystal import CrystalBase, CrystalPhase
+from pymatgen.core import Lattice
+from xrdpattern.crystal import CrystalBasis, CrystalStructure
 from xrdpattern.pattern import XrdPattern
-from xrdpattern.tools.spg_converter import SpacegroupConverter
+from xrdpattern.crystal.spgs import SpacegroupConverter
 from xrdpattern.xrd import PowderExperiment, XrayInfo
 
 
@@ -78,8 +79,9 @@ if __name__ == "__main__":
                 raise ValueError(f'Expected int, got {type(spacegroup)}')
 
             a,b,c,alpha, beta, gamma = labels.lattice_parameters
+            lattice = Lattice.from_parameters(a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma)
 
-            crystal_structure = CrystalPhase(lengths=(a,b,c), angles=(alpha, beta, gamma), spacegroup=spacegroup, base=CrystalBase())
+            crystal_structure = CrystalStructure(lattice=lattice, basis=CrystalBasis.empty(), spacegroup=spacegroup)
             artifacts = XrayInfo(primary_wavelength=labels.wavelength, secondary_wavelength=copper_wavelength)
             pattern.powder_experiment = PowderExperiment(phases=[crystal_structure], xray_info=artifacts, is_simulated=False)
             pattern.save(fpath=os.path.join(output_dirpath, base_name))

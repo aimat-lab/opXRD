@@ -6,11 +6,12 @@ import pandas as pd
 from holytools.devtools import ModuleInspector
 from holytools.fsys import PathTools
 from holytools.logging import LoggerFactory
-from xrdpattern.crystal import CrystalPhase
+from xrdpattern.crystal import CrystalStructure
 from xrdpattern.pattern import PatternDB
-from xrdpattern.xrd import PowderExperiment, XrayInfo, XrdAnode
+from xrdpattern.xrd import PowderExperiment, XrayInfo
 
 from processors.internal.csv_label import get_powder_experiment, get_label_mapping
+
 
 # -------------------------------------------
 
@@ -19,7 +20,7 @@ class FinalProcessor:
         self.root_dirpath : str = root_dirpath
         self.processed_dirpath : str = os.path.join(root_dirpath, 'prepared')
         self.final_dirpath : str = os.path.join(root_dirpath, 'final')
-        self.cu_xray : XrayInfo = XrdAnode.Cu.get_xray_info()
+        self.cu_xray : XrayInfo = XrayInfo.copper_xray()
         self.logger : Logger = LoggerFactory.get_logger(name=__name__)
 
     # ---------------------------------------
@@ -109,7 +110,7 @@ class FinalProcessor:
             return
 
         for p in pattern_db.patterns:
-            if p.powder_experiment.is_nonempty():
+            if p.powder_experiment.is_labeled():
                 raise ValueError(f"Pattern {p.get_name()} is already labeled")
 
         data = pd.read_csv(csv_fpath, skiprows=1)
@@ -137,9 +138,9 @@ class FinalProcessor:
         return cif_content
 
     @staticmethod
-    def safe_cif_read(cif_content: str) -> Optional[CrystalPhase]:
+    def safe_cif_read(cif_content: str) -> Optional[CrystalStructure]:
         try:
-            extracted_phase = CrystalPhase.from_cif(cif_content)
+            extracted_phase = CrystalStructure.from_cif(cif_content)
         except:
             extracted_phase = None
         return extracted_phase

@@ -4,8 +4,9 @@ import tempfile
 
 import numpy as np
 import requests
+from pymatgen.core import Lattice
 
-from xrdpattern.crystal import CrystalPhase, CrystalBase
+from xrdpattern.crystal import CrystalStructure, CrystalBasis
 from xrdpattern.pattern import XrdPattern
 from xrdpattern.xrd import PowderExperiment
 
@@ -33,7 +34,8 @@ def retrieve_cod_data(json_fpath : str, out_dirpath : str):
             spg_num = data_dict['sg_number']
 
             x, y = data_dict['x'], data_dict['y']
-            phase = CrystalPhase(lengths=(a,b,c), angles=(alpha,beta,gamma), spacegroup=spg_num, base=CrystalBase())
+            lattice = Lattice.from_parameters(a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma)
+            phase = CrystalStructure(lattice=lattice, spacegroup=spg_num, basis=CrystalBasis.empty())
             powder_experiment = PowderExperiment.from_single_phase(phase=phase)
             pattern = XrdPattern(two_theta_values=np.array(x), intensities=np.array(y), powder_experiment=powder_experiment)
 
