@@ -27,7 +27,10 @@ def retrieve_cod_data(json_fpath : str, out_dirpath : str):
         try:
             pattern = parse_cod_cif(num=num)
             print(f'Successfully parsed structure number {num} and saved file at {save_fpath}')
+
         except BaseException as e:
+            print(f'Failed to extract COD pattern {num} due to error {e}. Falling back on provided data')
+
             a,b,c = data_dict['cell_a'], data_dict['cell_b'], data_dict['cell_c']
             a,b,c = (10*a,10*b,10*c)
             alpha, beta, gamma = data_dict['cell_alpha'], data_dict['cell_beta'], data_dict['cell_gamma']
@@ -37,11 +40,14 @@ def retrieve_cod_data(json_fpath : str, out_dirpath : str):
             lattice = Lattice.from_parameters(a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma)
             phase = CrystalStructure(lattice=lattice, spacegroup=spg_num, basis=CrystalBasis.empty())
             powder_experiment = PowderExperiment.from_single_phase(phase=phase)
-            pattern = XrdPattern(two_theta_values=np.array(x), intensities=np.array(y), powder_experiment=powder_experiment)
-
-            print(f'Failed to extract COD pattern {num} due to error {e}. Falling back on provided data')
+            try:
+                pattern = XrdPattern(two_theta_values=np.array(x), intensities=np.array(y), powder_experiment=powder_experiment)
+            except:
+                print(f'Failed to create pattern from data {data_dict}')
+                continue
 
         pattern.save(fpath=save_fpath, force_overwrite=True)
+
 
 def parse_cod_cif(num : int) -> XrdPattern:
     base_url = 'https://www.crystallography.net/cod'
