@@ -10,7 +10,7 @@ from xrdpattern.pattern import PatternDB
 from xrdpattern.xrd import PowderExperiment, XrayInfo
 
 from processors.internal.csv_label import get_powder_experiment, get_label_mapping
-from processors.internal.module_inspector import ModuleInspector
+from processors.internal.methods import ModuleInspector
 
 
 # -------------------------------------------
@@ -18,7 +18,7 @@ from processors.internal.module_inspector import ModuleInspector
 class FinalProcessor:
     def __init__(self, root_dirpath : str):
         self.root_dirpath : str = root_dirpath
-        self.processed_dirpath : str = os.path.join(root_dirpath, 'prepared')
+        self.prepared_dirpath : str = os.path.join(root_dirpath, 'prepared')
         self.final_dirpath : str = os.path.join(root_dirpath, 'final')
         self.cu_xray : XrayInfo = XrayInfo.copper_xray()
         self.logger : Logger = logging.getLogger(name=__name__)
@@ -37,17 +37,16 @@ class FinalProcessor:
 
     def get_db(self, dirname: str,
                suffixes : Optional[list[str]] = None,
-               use_cif_labels : bool = False,
                xray_info : Optional[XrayInfo] = None,
                csv_orientation : Optional[str] = None,
                strict : bool = False) -> PatternDB:
         self.logger.info(f'Started processing contribution {dirname}')
-        data_dirpath = os.path.join(self.processed_dirpath, dirname, 'data')
-        contrib_dirpath = os.path.join(self.processed_dirpath, dirname)
-        pattern_db = PatternDB.load(dirpath=data_dirpath, suffixes=suffixes, csv_orientation=csv_orientation, strict=strict)
+        contrib_dirpath = os.path.join(self.prepared_dirpath, dirname)
+        contrib_data = os.path.join(self.prepared_dirpath, dirname, 'ready')
+        pattern_db = PatternDB.load(dirpath=contrib_data, suffixes=suffixes, csv_orientation=csv_orientation, strict=strict)
 
         self.attach_metadata(pattern_db, dirname=dirname)
-        self.attach_labels(pattern_db=pattern_db, contrib_dirpath=contrib_dirpath, use_cif_labels=use_cif_labels)
+        self.attach_csv_labels(pattern_db=pattern_db, contrib_dirpath=contrib_dirpath)
         if xray_info:
             pattern_db.set_xray(xray_info=xray_info)
         for p in pattern_db.patterns:
@@ -63,7 +62,7 @@ class FinalProcessor:
     # Parsing steps
 
     def attach_metadata(self, pattern_db : PatternDB, dirname : str):
-        form_dirpath = os.path.join(self.processed_dirpath, dirname, 'form.txt')
+        form_dirpath = os.path.join(self.prepared_dirpath, dirname, 'form.txt')
         with open(form_dirpath, "r") as file:
             lines = file.readlines()
         form_data = {}
@@ -76,12 +75,6 @@ class FinalProcessor:
             p.metadata.contributor_name = form_data["name_of_advisor"]
             p.metadata.institution = form_data["contributing_institution"]
 
-
-    def attach_labels(self, pattern_db : PatternDB, contrib_dirpath: str, use_cif_labels : bool):
-        if use_cif_labels:
-            self.attach_cif_labels(pattern_db)
-        else:
-            self.attach_csv_labels(pattern_db, contrib_dirpath=contrib_dirpath)
 
     @staticmethod
     def attach_cif_labels(pattern_db : PatternDB):
