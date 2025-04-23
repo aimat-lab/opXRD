@@ -32,8 +32,9 @@ class FinalProcessor:
         parse_methods = [m for m in methods if not m.__name__.endswith('all') and 'parse' in m.__name__]
 
         for mthd in parse_methods:
-            print(f'mthd name = {mthd.__name__}')
+            print(f'- Running method {mthd.__name__}')
             mthd()
+            print(f'+--------------------------------------+\n')
 
     def get_db(self, dirname: str,
                suffixes : Optional[list[str]] = None,
@@ -100,7 +101,7 @@ class FinalProcessor:
         csv_fpath = os.path.join(contrib_dirpath, 'labels.csv')
 
         if not os.path.isfile(csv_fpath):
-            print(f'No labels available for contribution {os.path.basename(contrib_dirpath)}')
+            print(f'- Detected no CSV labels for contribution {os.path.basename(contrib_dirpath)}')
             return
 
         for p in pattern_db.patterns:

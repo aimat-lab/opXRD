@@ -72,7 +72,7 @@ class ContributionProcessor(FinalProcessor):
         print(f'In situ dirs: {in_situ_dirs}')
         print(f'Non situ dirs: {non_situ_dirs}')
 
-        in_situ_fpath = os.path.join(self.final_dirpath, 'opxrd_in_situ.zip')
+        in_situ_fpath = os.path.join(self.final_dirpath, 'opxrd_in_situ1.zip')
         self._zip_dirs(in_situ_dirs, output_fpath=in_situ_fpath)
 
         non_situ_fpath = os.path.join(self.final_dirpath, 'opxrd.zip')

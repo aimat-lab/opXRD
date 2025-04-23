@@ -37,7 +37,8 @@ def get_powder_experiment(pattern_fpath : str, contrib_dirpath : str, phases) ->
         if not csv_label is None:
             csv_label.set_phase_properties(phase=powder_experiment.phases[phase_num])
         else:
-            print(f'Unlabeled pattern {rel_path} in contribution {os.path.basename(contrib_dirpath)}')
+            # print(f'Unlabeled pattern {rel_path} in contribution {os.path.basename(contrib_dirpath)}')
+            pass
 
     return powder_experiment
 
