@@ -43,7 +43,7 @@ def define_spg_ax(patterns: list[XrdPattern], ax: Axes):
 
 def define_recorded_angles_ax(patterns: list[XrdPattern], ax: Axes):
     values = get_valid_values(patterns=patterns, attr='angular_resolution')
-    ax.set_title(f'(b)', loc='left')
+    ax.set_title(f'(a)', loc='left')
     ax.hist(values, bins=10, range=(0, 0.1), edgecolor='black')
     ax.set_xlabel(r'Angular resolution $\Delta(2\theta)$ [$^\circ$]')
     ax.set_yscale('log')
@@ -80,7 +80,7 @@ def define_angle_start_stop_ax(patterns: list[XrdPattern], density_ax: Axes, top
         cmap_ax.set_ylabel(f'No. patterns')
 
     top_marginal.hist(start_data, bins=np.linspace(*start_angle_range, num=10), edgecolor='black')
-    top_marginal.set_title(f'(c)', loc='left')
+    top_marginal.set_title(f'(b)', loc='left')
     top_marginal.set_yscale('log')
     top_marginal.tick_params(axis="x", labelbottom=False, which='both', bottom=False)
 
