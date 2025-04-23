@@ -2,6 +2,7 @@ import math
 import os
 from typing import Optional
 
+import matplotlib.gridspec as gridspec
 import numpy as np
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
@@ -9,6 +10,7 @@ from sklearn.decomposition import PCA
 
 from opxrd.analysis.tables import TableAnalyser
 from opxrd.analysis.tools import compute_standardized_fourier, print_text
+from .visualization import define_angle_start_stop_ax, define_recorded_angles_ax, define_spg_ax
 
 
 # -----------------------------------------
@@ -171,10 +173,51 @@ class DatabaseAnalyser(TableAnalyser):
         plt.savefig(os.path.join(self.output_dirpath,figname))
         plt.show()
 
+    def show_histograms(self, save_fpath: Optional[str] = None, attach_colorbar: bool = True):
+        fig = plt.figure(figsize=(12, 8))
 
+        figure = gridspec.GridSpec(nrows=2, ncols=1, figure=fig, hspace=0.35)
+        figure.update(top=0.96, bottom=0.075)
+        upper_half = figure[0].subgridspec(1, 3)
+        ax2 = fig.add_subplot(upper_half[:, :])
+        define_spg_ax(patterns=self.patterns, ax=ax2)
 
-    def plot_histogram(self, attach_colorbar : bool = False):
-        print_text(f'---> Histogram of general information on opXRD')
-        self.joined_db.show_histograms(save_fpath=os.path.join(self.output_dirpath, 'histogram.png'), attach_colorbar=attach_colorbar)
+        lower_half = figure[1].subgridspec(1, 2)
+        ax3 = fig.add_subplot(lower_half[:, 0])
+        define_recorded_angles_ax(patterns=self.patterns, ax=ax3)
 
+        if attach_colorbar:
+            lower_half_right = lower_half[1].subgridspec(nrows=3, ncols=3, width_ratios=[3, 3, 4], hspace=0, wspace=0)
+            ax4 = fig.add_subplot(lower_half_right[1:, :2])  # scaatter
+            ax5 = fig.add_subplot(lower_half_right[:1, :2], sharex=ax4)  # Above
+            ax6 = fig.add_subplot(lower_half_right[1:, 2:], sharey=ax4)  # Right
+            ax7 = fig.add_subplot(lower_half_right[:1, 2:])
+            ax7.axis('off')
+        else:
+            lower_half_right = lower_half[1].subgridspec(nrows=3, ncols=4, width_ratios=[2.75, 3, 3, 3], hspace=0,
+                                                         wspace=0)
+            ax4 = fig.add_subplot(lower_half_right[1:, 1:3])  # scatter
+            ax5 = fig.add_subplot(lower_half_right[:1, 1:3], sharex=ax4)  # Above
+            ax6 = fig.add_subplot(lower_half_right[1:, 3:4], sharey=ax4)  # Right
+            ax7 = fig.add_subplot(lower_half_right[:4, :1])
+
+        define_angle_start_stop_ax(patterns=self.patterns, density_ax=ax4, top_marginal=ax5, right_marginal=ax6,
+                                   cmap_ax=ax7, attach_colorbar=attach_colorbar)
+
+        if save_fpath:
+            plt.savefig(save_fpath)
+        plt.show()
+
+    def labels_histogram(self, save_fpath: Optional[str] = None):
+        fig = plt.figure(figsize=(12, 8))
+
+        figure = gridspec.GridSpec(nrows=2, ncols=1, figure=fig, hspace=0.35)
+        figure.update(top=0.96, bottom=0.075)
+        upper_half = figure[0].subgridspec(1, 3)
+        ax2 = fig.add_subplot(upper_half[:, :])
+        define_spg_ax(patterns=self.patterns, ax=ax2)
+
+        if save_fpath:
+            plt.savefig(save_fpath)
+        plt.show()
 
