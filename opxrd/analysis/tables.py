@@ -4,7 +4,7 @@ import random
 from tabulate import tabulate
 
 from opxrd.analysis.tools import print_text
-from xrdpattern.pattern import PatternDB
+from xrdpattern.pattern import PatternDB, XrdPattern
 from xrdpattern.xrd import LabelType
 
 
@@ -17,6 +17,8 @@ class TableAnalyser:
         self.databases: list[PatternDB] = databases
         self.joined_db: PatternDB = PatternDB.merge(databases)
         self.output_dirpath: str = output_dirpath
+        self.patterns : list[XrdPattern] = self.joined_db.patterns
+
         os.makedirs(self.output_dirpath, exist_ok=True)
         random.seed(42)
 

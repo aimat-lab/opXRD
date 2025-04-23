@@ -7,8 +7,8 @@ from matplotlib.axes import Axes
 from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from .pattern import XrdPattern
 from xrdpattern.crystal.spgs import SpacegroupConverter
+from xrdpattern.pattern import XrdPattern
 
 
 # -----------------------------------------
