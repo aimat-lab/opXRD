@@ -28,16 +28,16 @@ class TableAnlysis:
         self.print_text(f'---> Overview of label fractions per contribution')
         table_data = []
         for d in self.databases:
-            label_counts = {l: 0 for l in LabelType}
+            label_counts = {l: 0 for l in LabelType.get_main_labels()}
             patterns = d.patterns
-            for l in LabelType:
+            for l in LabelType.get_main_labels():
                 for p in patterns:
                     if p.powder_experiment.has_label(label_type=l):
                         label_counts[l] += 1
-            row = [len(d.patterns)] + [label_counts[l] / len(patterns) for l in LabelType]
+            row = [len(d.patterns)] + [label_counts[l] / len(patterns) for l in LabelType.get_main_labels()]
             table_data.append(row)
 
-        col_headers = ['No. patterns'] +  [label.name for label in LabelType]
+        col_headers = ['No. patterns'] +  [label.name for label in LabelType.get_main_labels()]
         row_headers = [db.name for db in self.databases]
 
 
