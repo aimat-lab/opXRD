@@ -5,15 +5,15 @@ import numpy as np
 from xrdpattern.pattern import XrdPattern
 from xrdpattern.xrd import PowderExperiment
 
-root_dirpath = '/home/daniel/aimat/data/full/zhang_cao_0/data/caobin_pxrd_xy'
-target_dirpath = '/home/daniel/aimat/data/final/HKUST-A'
+source_dirpath = '/media/daniel/mirrors/xrd.aimat.science/local/prepared/zhang_cao_0/original/caobin_pxrd_xy'
+target_dirpath = '/media/daniel/mirrors/xrd.aimat.science/local/prepared/zhang_cao_0/ready'
 
 patterns = []
-subdirs = [x for x in os.listdir(root_dirpath) if os.path.isdir(os.path.join(root_dirpath, x))]
+subdirs = [x for x in os.listdir(source_dirpath) if os.path.isdir(os.path.join(source_dirpath, x))]
 
 
 for j, dirname in enumerate(subdirs):
-    subdir_path = os.path.join(root_dirpath, dirname)
+    subdir_path = os.path.join(source_dirpath, dirname)
     if not os.path.isdir(subdir_path):
         continue
 
