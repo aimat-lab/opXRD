@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 
+from xrdpattern.crystal import CrystalStructure
 from xrdpattern.pattern import XrdPattern
 from xrdpattern.xrd import PowderExperiment
 
@@ -20,11 +21,16 @@ for j, dirname in enumerate(subdirs):
     filenames = os.listdir(subdir_path)
     fpaths = [os.path.join(subdir_path, filename) for filename in filenames]
 
-    cif_fpath = [x for x in fpaths if x.endswith('.cif')][0]
-    xy_fpath = [x for x in fpaths if x.endswith('.txt')][0]
+    phases = []
+    for cif_fpath in [x for x in fpaths if x.endswith('.cif')]:
+        with open(cif_fpath, 'r') as f:
+            try:
+                phases.append(CrystalStructure.from_cif(cif_content=f.read()))
+            except:
+                print(f'Failed to read cif file {cif_fpath}')
+    experiment = PowderExperiment.from_multi_phase(phases)
 
-    with open(cif_fpath, 'r') as f:
-        experiment = PowderExperiment.from_cif(f.read())
+    xy_fpath = [x for x in fpaths if x.endswith('.txt')][0]
     with open(xy_fpath, 'r') as f:
         xylines = f.readlines()
         x,y = [], []
