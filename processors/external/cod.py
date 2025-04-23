@@ -74,7 +74,7 @@ def parse_cod_cif(num : int) -> XrdPattern:
     return XrdPattern.load(fpath=temp_fpath, mute=True)
 
 if __name__ == "__main__":
-    json_fpath = '/media/daniel/mirrors/xrd.aimat.science/local/prepared/coudert_hardiagon_0/original/extracted_data.json'
+    extracted_fpath = '/media/daniel/mirrors/xrd.aimat.science/local/prepared/coudert_hardiagon_0/original/extracted_data.json'
     target_dirpath = '/media/daniel/mirrors/xrd.aimat.science/local/prepared/coudert_hardiagon_0/ready'
-    retrieve_cod_data(json_fpath=json_fpath, out_dirpath=target_dirpath)
+    retrieve_cod_data(json_fpath=extracted_fpath, out_dirpath=target_dirpath)
     print(f'done')

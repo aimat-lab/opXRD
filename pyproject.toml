@@ -19,3 +19,6 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 include = ["opxrd*"]
+
+[project.optional-dependencies]
+test = ["holytools"]
