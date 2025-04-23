@@ -53,7 +53,7 @@ class ContributionProcessor(FinalProcessor):
         db.save(dirpath=self.get_final_dirpath('IKFT'))
 
     def parse_HKUST(self):
-        db = self.get_db(dirname='zhang_cao_0', use_cif_labels=True, suffixes=['txt'], xray_info=self.cu_xray)
+        db = self.get_db(dirname='zhang_cao_0', xray_info=self.cu_xray)
         db.save(dirpath=self.get_final_dirpath('HKUST','HKUST-A'))
 
         db1 = self.get_db(dirname='zhang_cao_1', xray_info=self.cu_xray)
@@ -95,5 +95,5 @@ class ContributionProcessor(FinalProcessor):
 
 
 if __name__ == "__main__":
-    processor = ContributionProcessor(root_dirpath='/media/daniel/mirrors/xrd.aimat.science')
-    processor.parse_LBNL()
+    processor = ContributionProcessor(root_dirpath='/home/daniel/aimat/data')
+    processor.parse_all()

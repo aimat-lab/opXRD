@@ -44,14 +44,16 @@ def make_base(chemical_symbols : list[str], fract_positions : NDArray) -> Crysta
     return CrystalBasis(atoms)
 
 if __name__ == "__main__":
-    processing_dirpath = '/home/daniel/aimat/data/opXRD/processed/zhang_cao_1'
-    database_fpath = os.path.join(processing_dirpath,'caobin.db')
+    source_dirpath = '/media/daniel/mirrors/xrd.aimat.science/local/prepared/zhang_cao_1/original/hkust_caobin'
+    target_dirpath  = '/media/daniel/mirrors/xrd.aimat.science/local/prepared/zhang_cao_1/ready'
+
+    database_fpath = os.path.join(source_dirpath,'caobin.db')
     print(f'Reading form database at {database_fpath}')
     data = connect(database_fpath)
 
     print(f'Reading data from database containing {data.count()} entries')
     for idx in range(1, data.count()+1):
         xrdpattern = get_xrdpattern(data, index=idx, add_labels=False)
-        xrdpattern.save(fpath=os.path.join(processing_dirpath, 'data', f'pattern_{idx}.json'), force_overwrite=True)
+        xrdpattern.save(fpath=os.path.join(target_dirpath, f'pattern_{idx}.json'), force_overwrite=True)
         print(f'Saved pattern {idx} to file')
 
