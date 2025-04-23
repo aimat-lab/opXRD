@@ -1,1 +1,1 @@
-from .plotter import DatabaseAnalyser
+from .plot import PlotAnalysis

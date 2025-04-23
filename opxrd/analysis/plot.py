@@ -8,19 +8,18 @@ from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 
-from opxrd.analysis.tables import TableAnalyser
-from opxrd.analysis.tools import compute_standardized_fourier, print_text
+from opxrd.analysis.tables import TableAnlysis
 from .visualization import define_angle_start_stop_ax, define_recorded_angles_ax, define_spg_ax
 
 
 # -----------------------------------------
 
-class DatabaseAnalyser(TableAnalyser):
+class PlotAnalysis(TableAnlysis):
 
     def plot_in_single(self, limit_patterns: int):
         lower_alphabet = [chr(i) for i in range(97, 123)]
         explanation = [f'{letter}:{db.name}' for letter, db in zip(lower_alphabet, self.databases)]
-        print_text(f'---> Combined pattern plot for databaes {explanation} | No. patterns = {limit_patterns}')
+        self.print_text(f'---> Combined pattern plot for databaes {explanation} | No. patterns = {limit_patterns}')
 
         cols = 3
         rows = math.ceil(len(self.databases) / cols)
@@ -63,7 +62,7 @@ class DatabaseAnalyser(TableAnalyser):
         y = y/np.max(y)
 
         self._fourier_plots(x, [y], msg=msg, figname='reference_fourier.png')
-        print_text(r'$f(x) = \delta(x-a_1)+\delta(x-a_2) \implies \hat{f}(k) = e^{ika_1} + e^{ika_2}$  <br />'
+        self.print_text(r'$f(x) = \delta(x-a_1)+\delta(x-a_2) \implies \hat{f}(k) = e^{ika_1} + e^{ika_2}$  <br />'
                    r'$|\hat{f}(k)| = 2 | \sin(k\Delta a/2)|$, $\Delta a = a_1 - a_2$')
 
 
@@ -134,7 +133,7 @@ class DatabaseAnalyser(TableAnalyser):
 
 
     def plot_effective_components(self, use_fractions : bool = True):
-        print_text(r'---> Cumulative explained variance ratio $v$ over components '
+        self.print_text(r'---> Cumulative explained variance ratio $v$ over components '
                         r'|  $v =  \frac{\sum_i \lambda_i}{\sum^n_{j=1} \lambda_j}$')
 
         half = len(self.databases) // 2
@@ -173,7 +172,7 @@ class DatabaseAnalyser(TableAnalyser):
         plt.savefig(os.path.join(self.output_dirpath,figname))
         plt.show()
 
-    def show_histograms(self, save_fpath: Optional[str] = None, attach_colorbar: bool = True):
+    def xrd_histogram(self, save_fpath: Optional[str] = None, attach_colorbar: bool = True):
         fig = plt.figure(figsize=(12, 8))
 
         figure = gridspec.GridSpec(nrows=2, ncols=1, figure=fig, hspace=0.35)
@@ -208,7 +207,7 @@ class DatabaseAnalyser(TableAnalyser):
             plt.savefig(save_fpath)
         plt.show()
 
-    def labels_histogram(self, save_fpath: Optional[str] = None):
+    def structure_histogram(self, save_fpath: Optional[str] = None):
         fig = plt.figure(figsize=(12, 8))
 
         figure = gridspec.GridSpec(nrows=2, ncols=1, figure=fig, hspace=0.35)
@@ -220,4 +219,17 @@ class DatabaseAnalyser(TableAnalyser):
         if save_fpath:
             plt.savefig(save_fpath)
         plt.show()
+
+
+
+def compute_standardized_fourier(x: NDArray, y: NDArray):
+    N = len(y)
+    T = (x[-1] - x[0]) / (N - 1)
+
+    yf = np.fft.fft(y)
+    xf = np.fft.fftfreq(N, T)[:N // 2]
+    yf = np.abs(yf[:N // 2])
+    yf = yf/np.max(yf)
+    return xf, yf
+
 

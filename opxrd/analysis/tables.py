@@ -1,16 +1,17 @@
 import os
 import random
 
+from IPython.core.display import Markdown
+from IPython.core.display_functions import display
 from tabulate import tabulate
 
-from opxrd.analysis.tools import print_text
 from xrdpattern.pattern import PatternDB, XrdPattern
 from xrdpattern.xrd import LabelType
 
 
 # ---------------------------------------------------
 
-class TableAnalyser:
+class TableAnlysis:
     def __init__(self, databases: list[PatternDB], output_dirpath: str):
         if len(databases) == 0:
             raise ValueError('No databases provided')
@@ -24,7 +25,7 @@ class TableAnalyser:
 
 
     def show_label_fractions(self):
-        print_text(f'---> Overview of label fractions per contribution')
+        self.print_text(f'---> Overview of label fractions per contribution')
         table_data = []
         for d in self.databases:
             label_counts = {l: 0 for l in LabelType}
@@ -46,10 +47,18 @@ class TableAnalyser:
 
 
     def print_total_counts(self):
-        print_text(f'---> Total pattern counts in opXRD')
+        self.print_text(f'---> Total pattern counts in opXRD')
         num_total = len(self.joined_db.patterns)
 
         labeled_patterns = [p for p in self.joined_db.patterns if p.powder_experiment.is_labeled()]
         num_labelel = len(labeled_patterns)
         print(f'Total number of patterns = {num_total}')
         print(f'Number of labeled patterns = {num_labelel}')
+
+
+    @staticmethod
+    def print_text(msg: str):
+        try:
+            display(Markdown(msg))
+        except:
+            print(msg)
