@@ -203,19 +203,11 @@ class PlotAnalysis(TableAnlysis):
         plt.show()
 
     def structure_histogram(self, save_fpath: Optional[str] = None):
-        # figure = gridspec.GridSpec(nrows=2, ncols=1, figure=fig, hspace=0.35)
-        # figure.update(top=0.96, bottom=0.075)
-        # upper_half = figure[0].subgridspec(1, 3)
-        # ax2 = fig.add_subplot(upper_half[:, :])
-        # define_spg_ax(patterns=self.patterns, ax=ax2)
-
-
         fig = plt.figure(figsize=(12, 8))
 
-        figure = gridspec.GridSpec(nrows=2, ncols=1, figure=fig, hspace=0.35)
-        figure.update(top=0.96, bottom=0.075)
-        upper_half = figure[0].subgridspec(1, 3)
-        ax2 = fig.add_subplot(upper_half[:, :])
+        grid = gridspec.GridSpec(nrows=2, ncols=2, figure=fig, hspace=0.35)
+        grid.update(top=0.96, bottom=0.075)
+        ax2 = fig.add_subplot(grid[0, :])
         define_spg_ax(patterns=self.patterns, ax=ax2)
 
         if save_fpath:
