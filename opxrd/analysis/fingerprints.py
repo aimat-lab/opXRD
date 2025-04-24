@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import time
 from collections import Counter
 
 import numpy as np
@@ -37,7 +39,6 @@ class VAECrystal(object):
         self.angles : tuple[float, float, float] = angles
 
         self.get_structure()
-        self.get_composition()
         self.get_fingerprints()
 
     @classmethod
@@ -71,43 +72,31 @@ class VAECrystal(object):
                 self.constructed = False
                 self.invalid_reason = 'unrealistically_small_lattice'
 
-    def get_composition(self):
-        elem_counter = Counter(self.atom_types)
-        composition = [(elem, elem_counter[elem])
-                       for elem in sorted(elem_counter.keys())]
-        elems, counts = list(zip(*composition))
-        counts = np.array(counts)
-        counts = counts / np.gcd.reduce(counts)
-        self.elems = elems
-        self.comps = tuple(counts.astype('int').tolist())
-
     def get_fingerprints(self):
-        elem_counter = Counter(self.atom_types)
-        comp = Composition(elem_counter)
-        self.comp_fp = CompFP.featurize(comp)
+        # print(f'- Atom types: {self.atom_types}')
+        # print(f'- Frac coords: {self.frac_coords}')
+
+        start_time = time.time()
         try:
             site_fps = [CrystalNNFP.featurize(self.structure, i) for i in range(len(self.structure))]
-        except Exception:
+            print(f'- Finished fingerprint creation')
+        except Exception as e:
+            print(f'- CrystalNNFP failed:{e}')
             # counts crystal as invalid if fingerprint cannot be constructed.
-            self.valid = False
-            self.comp_fp = None
             self.struct_fp = None
             return
         self.struct_fp = np.array(site_fps).mean(axis=0)
+        print(f'time taken = {time.time()-start_time}')
 
-
-def structure_validity(crystal, cutoff=0.5):
-    dist_mat = crystal.distance_matrix
-    # Pad diagonal with a large number
-    dist_mat = dist_mat + np.diag(
-        np.ones(dist_mat.shape[0]) * (cutoff + 10.))
-    if dist_mat.min() < cutoff or crystal.volume < 0.1:
-        return False
-    else:
-        return True
 
 
 if __name__ == '__main__':
-    from xrdpattern.crystal import CrystalExamples
-    example_crystal = CrystalExamples.get_crystal()
-    crystal = VAECrystal.from_custom_structure(example_crystal)
+    icsd_dirpath = '/home/daniel/aimat/data/cif'
+    for j, fname in enumerate(os.listdir(icsd_dirpath)):
+        fpath = os.path.join(icsd_dirpath, fname)
+        with open(fpath, 'r') as f:
+            content = f.read()
+            crystal_structure = CrystalStructure.from_cif(cif_content=content)
+
+        crystal = VAECrystal.from_custom_structure(crystal_structure)
+        print(f'- Processed ICSD crystal No. {j}')
