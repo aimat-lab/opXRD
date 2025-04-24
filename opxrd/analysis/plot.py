@@ -209,13 +209,14 @@ class PlotAnalysis(TableAnlysis):
 
         grid = gridspec.GridSpec(nrows=4, ncols=2, figure=fig, hspace=0.5)
         grid.update(top=0.96, bottom=0.075)
-        ax2 = fig.add_subplot(grid[0, :])
+        ax1 = fig.add_subplot(grid[0, :])
+        ax2 = fig.add_subplot(grid[1, :])
+        ax3 = fig.add_subplot(grid[2, :])
+        ax4 = fig.add_subplot(grid[3, :])
+
+        AxesDefiner.define_elements_ax(patterns=self.patterns, ax=ax1)
         AxesDefiner.define_spg_ax(patterns=self.patterns, ax=ax2)
-
-        ax3 = fig.add_subplot(grid[1, :])
         AxesDefiner.define_no_atoms_ax(patterns=self.patterns, ax=ax3)
-
-        ax4 = fig.add_subplot(grid[2, :])
         AxesDefiner.define_volume_ax(patterns=self.patterns, ax=ax4)
 
         if save_fpath:

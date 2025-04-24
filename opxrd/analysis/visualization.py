@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 
 import matplotlib.colors
 import numpy as np
@@ -15,6 +15,35 @@ from xrdpattern.pattern import XrdPattern
 
 class AxesDefiner:
     @staticmethod
+    def define_elements_ax(patterns : list[XrdPattern], ax : Axes):
+        element_map = defaultdict(int)
+        for p in patterns:
+            if len(p.powder_experiment.phases) == 0:
+                continue
+            if p.powder_experiment.primary_phase.num_atoms == 0:
+                continue
+
+            primary_phase = p.primary_phase
+            for element in primary_phase.to_pymatgen().elements:
+                element = element.symbol
+                element_map[element] += 1
+
+        keys, counts = list(element_map.keys()), list(element_map.values())
+
+        zipped = zip(keys, counts)
+        sorted_zipped = sorted(zipped, key=lambda x : -x[1])
+        keys, counts = [], []
+
+        for k,c in sorted_zipped[:30]:
+            keys.append(k)
+            counts.append(c)
+        ax.bar(keys, counts)
+
+        ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
+        ax.set_title(f'(c)', loc='left')
+        ax.set_ylabel(f'No. patterns')
+
+    @staticmethod
     def define_spg_ax(patterns: list[XrdPattern], ax: Axes):
         keys, counts = get_counts(patterns=patterns, attr='primary_phase.spacegroup')
         keys, counts = keys[:30], counts[:30]
@@ -26,34 +55,6 @@ class AxesDefiner:
         ax.set_title(f'(a)', loc='left')
         ax.set_ylabel(f'No. patterns')
         ax.set_xticklabels(spg_formulas, rotation=90)
-
-    @staticmethod
-    def define_no_atoms_ax(patterns : list[XrdPattern], ax : Axes):
-        keys, counts = get_counts(patterns=patterns, attr='primary_phase.num_atoms')
-
-        order_counts_map = {'10' : 0, '100' : 0, '1000' : 0, 'BIG' : 0}
-        for k, c in zip(keys, counts):
-            k = int(k)
-            if k <= 10:
-                order = '10'
-            elif k <= 100:
-                order = '100'
-            elif k <= 1000:
-                order = '1000'
-            else:
-                order = 'BIG'
-            order_counts_map[order] += c
-
-        no_atoms_str = r'N_{\text{atom}}'
-        labels = [f'${no_atoms_str} \\leq 10$',
-                  f'$10 < {no_atoms_str} \\leq 10^2$',
-                  f'$10^2 < {no_atoms_str} \\leq 10^3$',
-                  f'${no_atoms_str} > 10^3$']
-        counts = list(order_counts_map.values())
-        ax.bar(labels, counts)
-        ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
-        ax.set_title(f'(b)', loc='left')
-        ax.set_ylabel(f'No. patterns')
 
     @staticmethod
     def define_volume_ax(patterns : list[XrdPattern], ax : Axes):
@@ -82,7 +83,36 @@ class AxesDefiner:
         counts = list(order_counts_map.values())
         ax.bar(labels, counts)
         ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
-        ax.set_title(f'(c)', loc='left')
+        ax.set_title(f'()', loc='left')
+        ax.set_ylabel(f'No. patterns')
+
+
+    @staticmethod
+    def define_no_atoms_ax(patterns : list[XrdPattern], ax : Axes):
+        keys, counts = get_counts(patterns=patterns, attr='primary_phase.num_atoms')
+
+        order_counts_map = {'10' : 0, '100' : 0, '1000' : 0, 'BIG' : 0}
+        for k, c in zip(keys, counts):
+            k = int(k)
+            if k <= 10:
+                order = '10'
+            elif k <= 100:
+                order = '100'
+            elif k <= 1000:
+                order = '1000'
+            else:
+                order = 'BIG'
+            order_counts_map[order] += c
+
+        no_atoms_str = r'N_{\text{atom}}'
+        labels = [f'${no_atoms_str} \\leq 10$',
+                  f'$10 < {no_atoms_str} \\leq 10^2$',
+                  f'$10^2 < {no_atoms_str} \\leq 10^3$',
+                  f'${no_atoms_str} > 10^3$']
+        counts = list(order_counts_map.values())
+        ax.bar(labels, counts)
+        ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
+        ax.set_title(f'(b)', loc='left')
         ax.set_ylabel(f'No. patterns')
 
     @staticmethod
