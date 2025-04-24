@@ -44,7 +44,7 @@ class AxesDefiner:
                 order = 'BIG'
             order_counts_map[order] += c
 
-        no_atoms_str = r'N'
+        no_atoms_str = r'N_{\text{atom}}'
         labels = [f'${no_atoms_str} \\leq 10$',
                   f'$10 < {no_atoms_str} \\leq 10^2$',
                   f'$10^2 < {no_atoms_str} \\leq 10^3$',
@@ -74,8 +74,8 @@ class AxesDefiner:
 
         # print(keys)
         # print(counts)
-        volume_str = r'V'
-        labels = ['$V \\leq 10^2 \\AA^3 $',
+        volume_str = r'V_{\text{uc}}'
+        labels = [f'${volume_str} \\leq 10^2 \\AA^3 $',
                   f'$10^2 \\AA^3 < {volume_str} \\leq 10^3 \\AA^3$',
                   f'$10^3 \\AA^3 < {volume_str} \\leq 10^4 \\AA^3$',
                   f'${volume_str} > 10^4 \\AA^3$']
