@@ -32,15 +32,18 @@ class ContributionProcessor(FinalProcessor):
         perovskite_db.set_xray(xray_info=xray_info)
         perovskite_db.save(dirpath=self.get_final_dirpath('LBNL','LBNL-A'))
 
-        db_B = self.get_csv_db(dirname='sutter-fella_abdelsamie_0', orientation='horizontal')
-        db_B.set_xray(xray_info=xray_info)
-        db_B.save(dirpath=self.get_final_dirpath('LBNL','LBNL-B'))
+        self._parse_LBNL_B(xray_info=xray_info)
 
         mn_sb_db = self.get_csv_db(dirname='sutter-fella_heymans_0', suffixes=['xlsx'], orientation='vertical')
         mn_sb_db.save(dirpath=self.get_final_dirpath('LBNL','LBNL-C'))
 
         uio_db = self.get_csv_db(dirname='sutter-fella_hu_0', orientation='horizontal')
         uio_db.save(dirpath=self.get_final_dirpath('LBNL','LBNL-D'))
+
+    def _parse_LBNL_B(self, xray_info : XrayInfo):
+        db_B = self.get_csv_db(dirname='sutter-fella_abdelsamie_0', orientation='horizontal')
+        db_B.set_xray(xray_info=xray_info)
+        db_B.save(dirpath=self.get_final_dirpath('LBNL','LBNL-B'))
 
     def parse_EMPA(self):
         db0 = self.get_db(dirname='siol_wieczorek_0', xray_info=self.cu_xray)
@@ -96,4 +99,5 @@ class ContributionProcessor(FinalProcessor):
 
 if __name__ == "__main__":
     processor = ContributionProcessor(root_dirpath='/media/daniel/mirrors/xrd.aimat.science/local')
-    processor.parse_LBNL()
+    xray_info = XrayInfo(primary_wavelength=1.23984, secondary_wavelength=None)
+    processor._parse_LBNL_B(xray_info=xray_info)

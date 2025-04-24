@@ -36,12 +36,15 @@ class FinalProcessor:
             mthd()
             print(f'+--------------------------------------+\n')
 
+    def get_csv_db(self, dirname: str, orientation : str, suffixes: Optional[list[str]] = None) -> PatternDB:
+        return self.get_db(dirname=dirname, csv_orientation=orientation, suffixes=suffixes, strict=True)
+
     def get_db(self, dirname: str,
                suffixes : Optional[list[str]] = None,
                xray_info : Optional[XrayInfo] = None,
                csv_orientation : Optional[str] = None,
                strict : bool = False) -> PatternDB:
-        self.logger.info(f'Started processing contribution {dirname}')
+        print(f'Started processing contribution {dirname}')
         contrib_dirpath = os.path.join(self.prepared_dirpath, dirname)
         contrib_data = os.path.join(self.prepared_dirpath, dirname, 'ready')
         pattern_db = PatternDB.load(dirpath=contrib_data, suffixes=suffixes, csv_orientation=csv_orientation, strict=strict)
@@ -52,12 +55,9 @@ class FinalProcessor:
             pattern_db.set_xray(xray_info=xray_info)
         for p in pattern_db.patterns:
             p.metadata.remove_filename()
-        self.logger.info(f'Finished processing contribution {dirname}')
+        print(f'Finished processing contribution {dirname}')
 
         return pattern_db
-
-    def get_csv_db(self, dirname: str, orientation : str, suffixes: Optional[list[str]] = None) -> PatternDB:
-        return self.get_db(dirname=dirname, csv_orientation=orientation, suffixes=suffixes, strict=False)
 
     # ---------------------------------------
     # Parsing steps
