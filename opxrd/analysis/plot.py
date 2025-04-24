@@ -9,8 +9,7 @@ from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 
 from opxrd.analysis.tables import TableAnlysis
-from .visualization import define_angle_start_stop_ax, define_recorded_angles_ax, define_spg_ax
-
+from .visualization import AxesDefiner
 
 # -----------------------------------------
 
@@ -178,7 +177,7 @@ class PlotAnalysis(TableAnlysis):
 
         grid = gridspec.GridSpec(nrows=1, ncols=2, figure=fig, hspace=0.35)
         ax3 = fig.add_subplot(grid[:, 0])
-        define_recorded_angles_ax(patterns=self.patterns, ax=ax3)
+        AxesDefiner.define_recorded_angles_ax(patterns=self.patterns, ax=ax3)
 
         if attach_colorbar:
             lower_half_right = grid[1].subgridspec(nrows=3, ncols=3, width_ratios=[3, 3, 4], hspace=0, wspace=0)
@@ -195,7 +194,7 @@ class PlotAnalysis(TableAnlysis):
             ax6 = fig.add_subplot(lower_half_right[1:, 3:4], sharey=ax4)  # Right
             ax7 = fig.add_subplot(lower_half_right[:4, :1])
 
-        define_angle_start_stop_ax(patterns=self.patterns, density_ax=ax4, top_marginal=ax5, right_marginal=ax6,
+        AxesDefiner.define_angle_start_stop_ax(patterns=self.patterns, density_ax=ax4, top_marginal=ax5, right_marginal=ax6,
                                    cmap_ax=ax7, attach_colorbar=attach_colorbar)
 
         if save_fpath:
@@ -203,12 +202,15 @@ class PlotAnalysis(TableAnlysis):
         plt.show()
 
     def structure_histogram(self, save_fpath: Optional[str] = None):
-        fig = plt.figure(figsize=(12, 8))
+        fig = plt.figure(figsize=(12, 12))
 
-        grid = gridspec.GridSpec(nrows=2, ncols=2, figure=fig, hspace=0.35)
+        grid = gridspec.GridSpec(nrows=4, ncols=2, figure=fig, hspace=0.5)
         grid.update(top=0.96, bottom=0.075)
         ax2 = fig.add_subplot(grid[0, :])
-        define_spg_ax(patterns=self.patterns, ax=ax2)
+        AxesDefiner.define_spg_ax(patterns=self.patterns, ax=ax2)
+
+        ax3 = fig.add_subplot(grid[1, :])
+        AxesDefiner.define_no_atoms_ax(patterns=self.patterns, ax=ax3)
 
         if save_fpath:
             plt.savefig(save_fpath)
