@@ -202,9 +202,6 @@ class PlotAnalysis(TableAnlysis):
         plt.show()
 
     def structure_histogram(self, save_fpath: Optional[str] = None):
-        self.print_text(f'---> Histograms detailing properties of labeled patterns in the opXRD database: '
-                        r'a) distribution of spacegroups; b) distribution of No. atoms N_{\text{atom}}; '
-                        r'c) distribution of unit cell volume V_{\text{uc}}')
         fig = plt.figure(figsize=(12, 12))
 
         grid = gridspec.GridSpec(nrows=4, ncols=2, figure=fig, hspace=0.5)
@@ -214,10 +211,10 @@ class PlotAnalysis(TableAnlysis):
         ax3 = fig.add_subplot(grid[2, :])
         ax4 = fig.add_subplot(grid[3, :])
 
-        AxesDefiner.define_elements_ax(patterns=self.patterns, ax=ax1)
-        AxesDefiner.define_spg_ax(patterns=self.patterns, ax=ax2)
-        AxesDefiner.define_no_atoms_ax(patterns=self.patterns, ax=ax3)
-        AxesDefiner.define_volume_ax(patterns=self.patterns, ax=ax4)
+        AxesDefiner.define_elements_ax(patterns=self.patterns, ax=ax1, letter='a')
+        AxesDefiner.define_spg_ax(patterns=self.patterns, ax=ax2, letter='b')
+        AxesDefiner.define_no_atoms_ax(patterns=self.patterns, ax=ax3, letter='c')
+        AxesDefiner.define_volume_ax(patterns=self.patterns, ax=ax4, letter='d')
 
         if save_fpath:
             plt.savefig(save_fpath)

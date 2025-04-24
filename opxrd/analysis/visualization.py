@@ -15,7 +15,7 @@ from xrdpattern.pattern import XrdPattern
 
 class AxesDefiner:
     @staticmethod
-    def define_elements_ax(patterns : list[XrdPattern], ax : Axes):
+    def define_elements_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
         element_map = defaultdict(int)
         for p in patterns:
             if len(p.powder_experiment.phases) == 0:
@@ -40,11 +40,11 @@ class AxesDefiner:
         ax.bar(keys, counts)
 
         ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
-        ax.set_title(f'(c)', loc='left')
+        ax.set_title(f'({letter})', loc='left')
         ax.set_ylabel(f'No. patterns')
 
     @staticmethod
-    def define_spg_ax(patterns: list[XrdPattern], ax: Axes):
+    def define_spg_ax(patterns: list[XrdPattern], ax: Axes, letter : str):
         keys, counts = get_counts(patterns=patterns, attr='primary_phase.spacegroup')
         keys, counts = keys[:30], counts[:30]
 
@@ -52,12 +52,12 @@ class AxesDefiner:
         spg_formulas = [f'${SpacegroupConverter.to_formula(spg, mathmode=True)}$' for spg in spgs]
         ax.bar(spg_formulas, counts)
         ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
-        ax.set_title(f'(a)', loc='left')
+        ax.set_title(f'({letter})', loc='left')
         ax.set_ylabel(f'No. patterns')
         ax.set_xticklabels(spg_formulas, rotation=90)
 
     @staticmethod
-    def define_volume_ax(patterns : list[XrdPattern], ax : Axes):
+    def define_volume_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
         keys, counts = get_counts(patterns=patterns, attr='primary_phase.volume_uc')
 
         order_counts_map = {'100' : 0, '1000' : 0, '10000' : 0,  'BIG' : 0}
@@ -83,12 +83,12 @@ class AxesDefiner:
         counts = list(order_counts_map.values())
         ax.bar(labels, counts)
         ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
-        ax.set_title(f'()', loc='left')
+        ax.set_title(f'({letter})', loc='left')
         ax.set_ylabel(f'No. patterns')
 
 
     @staticmethod
-    def define_no_atoms_ax(patterns : list[XrdPattern], ax : Axes):
+    def define_no_atoms_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
         keys, counts = get_counts(patterns=patterns, attr='primary_phase.num_atoms')
 
         order_counts_map = {'10' : 0, '100' : 0, '1000' : 0, 'BIG' : 0}
@@ -112,7 +112,7 @@ class AxesDefiner:
         counts = list(order_counts_map.values())
         ax.bar(labels, counts)
         ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
-        ax.set_title(f'(b)', loc='left')
+        ax.set_title(f'({letter})', loc='left')
         ax.set_ylabel(f'No. patterns')
 
     @staticmethod
