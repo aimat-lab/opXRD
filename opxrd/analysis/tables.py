@@ -22,11 +22,16 @@ class TableAnalyser:
 
         self.unlabeled : list[XrdPattern] = []
         self.labeled : list[XrdPattern] = []
+        self.fully_labeled : list[XrdPattern] = []
+
         for p in self.patterns:
             if p.is_labeled:
                 self.labeled.append(p)
+                if p.has_label(label_type=LabelType.basis):
+                    self.fully_labeled.append(p)
             else:
                 self.unlabeled.append(p)
+
 
         os.makedirs(self.output_dirpath, exist_ok=True)
         random.seed(42)
@@ -57,7 +62,7 @@ class TableAnalyser:
         patterns = d.patterns
         for l in LabelType.get_main_labels():
             for p in patterns:
-                if p.powder_experiment.has_label(label_type=l):
+                if p.has_label(label_type=l):
                     label_counts[l] += 1
         return [len(d.patterns)] + [label_counts[l] / len(patterns) if len(patterns) > 0 else '#' for l in LabelType.get_main_labels()]
 

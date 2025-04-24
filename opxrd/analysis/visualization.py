@@ -18,7 +18,7 @@ class AxesDefiner:
     def define_elements_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
         element_map = defaultdict(int)
         for p in patterns:
-            if not p.primary_phase == 0:
+            if p.primary_phase is None:
                 raise ValueError(f'Pattern {p.get_name()} has no primary phase')
             if p.primary_phase.num_atoms == 0:
                 raise ValueError(f'Pattern {p.get_name()} has no atoms')

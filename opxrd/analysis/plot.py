@@ -7,6 +7,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
+from xrdpattern.xrd import LabelType
 
 from opxrd.analysis.tables import TableAnalyser
 from .visualization import AxesDefiner
@@ -211,10 +212,11 @@ class PlotAnalysis(TableAnalyser):
         ax3 = fig.add_subplot(grid[2, :])
         ax4 = fig.add_subplot(grid[3, :])
 
-        AxesDefiner.define_elements_ax(patterns=self.patterns, ax=ax1, letter='a')
-        AxesDefiner.define_spg_ax(patterns=self.patterns, ax=ax2, letter='b')
-        AxesDefiner.define_no_atoms_ax(patterns=self.patterns, ax=ax3, letter='c')
-        AxesDefiner.define_volume_ax(patterns=self.patterns, ax=ax4, letter='d')
+        spg_patterns = [p for p in self.patterns if p.has_label(label_type=LabelType.spg)]
+        AxesDefiner.define_elements_ax(patterns=self.fully_labeled, ax=ax1, letter='a')
+        AxesDefiner.define_no_atoms_ax(patterns=self.fully_labeled, ax=ax3, letter='c')
+        AxesDefiner.define_spg_ax(patterns=spg_patterns, ax=ax2, letter='b')
+        AxesDefiner.define_volume_ax(patterns=self.labeled, ax=ax4, letter='d')
 
         if save_fpath:
             plt.savefig(save_fpath)
