@@ -4,11 +4,12 @@ import copy
 import json
 import os
 import time
+from typing import Optional
 
 import numpy as np
 from matminer.featurizers.composition.composite import ElementProperty
 from matminer.featurizers.site.fingerprint import CrystalNNFingerprint
-from numpy._typing import NDArray
+from numpy.typing import NDArray
 from pymatgen.core import Species
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
@@ -39,8 +40,7 @@ class VAECrystal(object):
         self.lengths : tuple[float, float, float] = lengths
         self.angles : tuple[float, float, float] = angles
 
-        self.get_structure()
-        self.get_fingerprints()
+        self.structure : Structure = self.get_structure()
 
     @classmethod
     def from_custom_structure(cls, structure : CrystalStructure) -> VAECrystal:
@@ -56,28 +56,11 @@ class VAECrystal(object):
 
         return VAECrystal(lengths=lengths, angles=angles, frac_coords=frac_coords, atom_types=atom_types)
 
-    def get_structure(self):
-        if min(self.lengths) < 0:
-            self.constructed = False
-            self.invalid_reason = 'non_positive_lattice'
-        else:
-            try:
+    def get_structure(self) -> Structure:
+        lattice = Lattice.from_parameters(*self.lengths, *self.angles)
+        return Structure(lattice=lattice, species=self.atom_types, coords=self.frac_coords, coords_are_cartesian=False)
 
-                self.structure = Structure(
-                    lattice=Lattice.from_parameters(*self.lengths, *self.angles),
-                    species=self.atom_types, coords=self.frac_coords, coords_are_cartesian=False)
-                self.constructed = True
-            except Exception:
-                self.constructed = False
-                self.invalid_reason = 'construction_raises_exception'
-            if self.structure.volume < 0.1:
-                self.constructed = False
-                self.invalid_reason = 'unrealistically_small_lattice'
-
-    def get_fingerprints(self):
-        # print(f'- Atom types: {self.atom_types}')
-        # print(f'- Frac coords: {self.frac_coords}')
-
+    def get_fingerprint(self) -> Optional[NDArray]:
         start_time = time.time()
         try:
             site_fps = [CrystalNNFP.featurize(self.structure, i) for i in range(len(self.structure))]
@@ -87,11 +70,10 @@ class VAECrystal(object):
 
         except Exception as e:
             print(f'- CrystalNNFP failed:{e}')
-            # counts crystal as invalid if fingerprint cannot be constructed.
-            self.struct_fp = None
-            return
-        self.struct_fp : NDArray = np.array(site_fps).mean(axis=0)
+            return None
+
         print(f'time taken = {time.time()-start_time}')
+        return np.array(site_fps).mean(axis=0)
 
 
 class FingerprintProcessor:
@@ -134,7 +116,7 @@ class FingerprintProcessor:
                     continue
 
             crystal = VAECrystal.from_custom_structure(crystal_structure)
-            fingerprint = crystal.struct_fp
+            fingerprint = crystal.get_fingerprint()
 
             if fingerprint is None:
                 continue
@@ -148,7 +130,7 @@ class FingerprintProcessor:
     @staticmethod
     def get_fingerprints(structures : list[CrystalStructure]):
         vae_crystals = [VAECrystal.from_custom_structure(struct) for struct in structures]
-        fingerprints = [c.struct_fp for c in vae_crystals]
+        fingerprints = [c.get_fingerprint() for c in vae_crystals]
 
         return fingerprints
 
