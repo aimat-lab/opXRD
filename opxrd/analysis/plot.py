@@ -172,7 +172,7 @@ class PlotAnalysis(TableAnlysis):
         plt.show()
 
     def xrd_histogram(self, save_fpath: Optional[str] = None, attach_colorbar: bool = False):
-        self.print_text(f'---> Histograms detailing properties of all patterns in the opXRD database: a) distribution of angular resolu-tion in all data; b) distribution of smallest and largest recorded 2θ values for all data.')
+
         fig = plt.figure(figsize=(12, 4))
 
         grid = gridspec.GridSpec(nrows=1, ncols=2, figure=fig, hspace=0.35)
@@ -202,7 +202,7 @@ class PlotAnalysis(TableAnlysis):
         plt.show()
 
     def structure_histogram(self, save_fpath: Optional[str] = None):
-        fig = plt.figure(figsize=(12, 12))
+        fig = plt.figure(figsize=(12, 11))
 
         grid = gridspec.GridSpec(nrows=4, ncols=2, figure=fig, hspace=0.5)
         grid.update(top=0.96, bottom=0.075)
