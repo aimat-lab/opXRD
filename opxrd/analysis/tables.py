@@ -24,6 +24,7 @@ class TableAnlysis:
         random.seed(42)
 
 
+
     def show_label_fractions(self):
         self.print_text(f'---> Overview of label fractions per contribution')
         table_data = []

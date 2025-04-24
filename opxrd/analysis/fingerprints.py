@@ -113,21 +113,25 @@ class FingerprintProcessor:
 
     @staticmethod
     def process_icsd_fingerprint(dirpath : str):
-        map_fname = 'map.txt'
-        if os.path.isfile(map_fname):
-            fingerprint_map = FingerprintProcessor.load_fingerprint_map(fpath=map_fname)
+        map_fpath = '/home/daniel/aimat/data/fingerprint_map.txt'
+        if os.path.isfile(map_fpath):
+            fingerprint_map = FingerprintProcessor.load_fingerprint_map(fpath=map_fpath)
         else:
             fingerprint_map = {'done' : set()}
 
-        for fname in os.listdir(dirpath):
-            # if fname in fingerprint_map['done']:
-            #     print(f'- Skipping {fname} as already processed')
-            #     continue
+        for j, fname in enumerate(os.listdir(dirpath)):
+            if fname in fingerprint_map['done']:
+                print(f'- Skipping {fname} as already processed')
+                continue
 
             fpath = os.path.join(dirpath, fname)
             with open(fpath, 'r') as f:
                 content = f.read()
-                crystal_structure = CrystalStructure.from_cif(cif_content=content)
+                try:
+                    crystal_structure = CrystalStructure.from_cif(cif_content=content)
+                except:
+                    print(f'- Failed to parse {fname} as cif')
+                    continue
 
             crystal = VAECrystal.from_custom_structure(crystal_structure)
             fingerprint = crystal.struct_fp
@@ -138,9 +142,15 @@ class FingerprintProcessor:
             fingerprint_map[fname] = fingerprint.tolist()
             fingerprint_map['done'].add(fname)
 
-            FingerprintProcessor.save_fingerprint_map(fpath=map_fname, state=copy.deepcopy(fingerprint_map))
-            print(f'- Successfully processed ICSD crystal')
+            FingerprintProcessor.save_fingerprint_map(fpath=map_fpath, state=copy.deepcopy(fingerprint_map))
+            print(f'- Successfully processed ICSD crystal. Loop counter = {j}')
 
+    @staticmethod
+    def get_fingerprints(structures : list[CrystalStructure]):
+        vae_crystals = [VAECrystal.from_custom_structure(struct) for struct in structures]
+        fingerprints = [c.struct_fp for c in vae_crystals]
+
+        return fingerprints
 
 
 if __name__ == '__main__':

@@ -221,7 +221,6 @@ class PlotAnalysis(TableAnlysis):
         plt.show()
 
 
-
 def compute_standardized_fourier(x: NDArray, y: NDArray):
     N = len(y)
     T = (x[-1] - x[0]) / (N - 1)
