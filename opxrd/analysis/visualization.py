@@ -34,25 +34,55 @@ class AxesDefiner:
         order_counts_map = {'10' : 0, '100' : 0, '1000' : 0, 'BIG' : 0}
         for k, c in zip(keys, counts):
             k = int(k)
-            if k < 10:
+            if k <= 10:
                 order = '10'
-            elif k < 100:
+            elif k <= 100:
                 order = '100'
-            elif k < 1000:
+            elif k <= 1000:
                 order = '1000'
             else:
                 order = 'BIG'
             order_counts_map[order] += c
 
-        no_atoms_str = r'\text{No. Atoms}'
-        labels = [f'$1 < {no_atoms_str} \\leq 10$',
-                  f'$10 < {no_atoms_str} \\leq 100$',
-                  f'$100 < {no_atoms_str} \\leq 1000$',
+        no_atoms_str = r'N'
+        labels = [f'${no_atoms_str} \\leq 10$',
+                  f'$10 < {no_atoms_str} \\leq 10^2$',
+                  f'$10^2 < {no_atoms_str} \\leq 10^3$',
                   f'${no_atoms_str} > 10^3$']
         counts = list(order_counts_map.values())
         ax.bar(labels, counts)
         ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
         ax.set_title(f'(b)', loc='left')
+        ax.set_ylabel(f'No. patterns')
+
+    @staticmethod
+    def define_volume_ax(patterns : list[XrdPattern], ax : Axes):
+        keys, counts = get_counts(patterns=patterns, attr='primary_phase.volume_uc')
+
+        order_counts_map = {'100' : 0, '1000' : 0, '10000' : 0,  'BIG' : 0}
+        for k, c in zip(keys, counts):
+            k = int(k)
+            if k <= 100:
+                order = '100'
+            elif k <= 1000:
+                order = '1000'
+            elif k <= 10**4:
+                order = '10000'
+            else:
+                order = 'BIG'
+            order_counts_map[order] += c
+
+        # print(keys)
+        # print(counts)
+        volume_str = r'V'
+        labels = ['$V \\leq 10^2 \\AA^3 $',
+                  f'$10^2 \\AA^3 < {volume_str} \\leq 10^3 \\AA^3$',
+                  f'$10^3 \\AA^3 < {volume_str} \\leq 10^4 \\AA^3$',
+                  f'${volume_str} > 10^4 \\AA^3$']
+        counts = list(order_counts_map.values())
+        ax.bar(labels, counts)
+        ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
+        ax.set_title(f'(c)', loc='left')
         ax.set_ylabel(f'No. patterns')
 
     @staticmethod

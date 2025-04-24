@@ -212,6 +212,9 @@ class PlotAnalysis(TableAnlysis):
         ax3 = fig.add_subplot(grid[1, :])
         AxesDefiner.define_no_atoms_ax(patterns=self.patterns, ax=ax3)
 
+        ax4 = fig.add_subplot(grid[2, :])
+        AxesDefiner.define_volume_ax(patterns=self.patterns, ax=ax4)
+
         if save_fpath:
             plt.savefig(save_fpath)
         plt.show()
