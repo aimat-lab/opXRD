@@ -18,10 +18,10 @@ class AxesDefiner:
     def define_elements_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
         element_map = defaultdict(int)
         for p in patterns:
-            if len(p.powder_experiment.phases) == 0:
-                continue
-            if p.powder_experiment.primary_phase.num_atoms == 0:
-                continue
+            if not p.primary_phase == 0:
+                raise ValueError(f'Pattern {p.get_name()} has no primary phase')
+            if p.primary_phase.num_atoms == 0:
+                raise ValueError(f'Pattern {p.get_name()} has no atoms')
 
             primary_phase = p.primary_phase
             for element in primary_phase.to_pymatgen().elements:
@@ -45,7 +45,7 @@ class AxesDefiner:
 
     @staticmethod
     def define_spg_ax(patterns: list[XrdPattern], ax: Axes, letter : str):
-        keys, counts = get_counts(patterns=patterns, attr='primary_phase.spacegroup')
+        keys, counts = get_keys_counts(patterns=patterns, attr='primary_phase.spacegroup')
         keys, counts = keys[:30], counts[:30]
 
         spgs = [int(k) for k in keys]
@@ -58,7 +58,7 @@ class AxesDefiner:
 
     @staticmethod
     def define_volume_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
-        keys, counts = get_counts(patterns=patterns, attr='primary_phase.volume_uc')
+        keys, counts = get_keys_counts(patterns=patterns, attr='primary_phase.volume_uc')
 
         order_counts_map = {'100' : 0, '1000' : 0, '10000' : 0,  'BIG' : 0}
         for k, c in zip(keys, counts):
@@ -89,7 +89,7 @@ class AxesDefiner:
 
     @staticmethod
     def define_no_atoms_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
-        keys, counts = get_counts(patterns=patterns, attr='primary_phase.num_atoms')
+        keys, counts = get_keys_counts(patterns=patterns, attr='primary_phase.num_atoms')
 
         order_counts_map = {'10' : 0, '100' : 0, '1000' : 0, 'BIG' : 0}
         for k, c in zip(keys, counts):
@@ -117,7 +117,7 @@ class AxesDefiner:
 
     @staticmethod
     def define_recorded_angles_ax(patterns: list[XrdPattern], ax: Axes):
-        values = get_valid_values(patterns=patterns, attr='angular_resolution')
+        values = get_values(patterns=patterns, attr='angular_resolution')
         ax.set_title(f'(a)', loc='left')
         ax.hist(values, bins=10, range=(0, 0.1), edgecolor='black')
         ax.set_xlabel(r'Angular resolution $\Delta(2\theta)$ [$^\circ$]')
@@ -126,8 +126,8 @@ class AxesDefiner:
 
     @staticmethod
     def define_angle_start_stop_ax(patterns: list[XrdPattern], density_ax: Axes, top_marginal: Axes, right_marginal: Axes, cmap_ax: Axes, attach_colorbar: bool):
-        start_data = get_valid_values(patterns=patterns, attr='startval')
-        end_data = get_valid_values(patterns=patterns, attr='endval')
+        start_data = get_values(patterns=patterns, attr='startval')
+        end_data = get_values(patterns=patterns, attr='endval')
         start_angle_range = (0, 60)
         end_angle_range = (0, 180)
 
@@ -178,8 +178,8 @@ class AxesDefiner:
         right_marginal.tick_params(axis="y", labelleft=False, which='both', left=False)
 
 
-def get_counts(patterns : list[XrdPattern], attr : str, sort_by_keys : bool = False):
-    values = get_valid_values(patterns, attr)
+def get_keys_counts(patterns : list[XrdPattern], attr : str, sort_by_keys : bool = False):
+    values = get_values(patterns, attr)
     count_map = Counter(values)
     if sort_by_keys:
         sorted_counts = sorted(count_map.items(), key=lambda x: x[0])
@@ -190,7 +190,7 @@ def get_counts(patterns : list[XrdPattern], attr : str, sort_by_keys : bool = Fa
     return keys, counts
 
 
-def get_valid_values(patterns : list[XrdPattern], attr : str) -> (list[str], list[int]):
+def get_values(patterns : list[XrdPattern], attr : str) -> (list[str], list[int]):
     def nested_getattr(obj: object, attr_string):
         attr_names = attr_string.split('.')
         for name in attr_names:
@@ -204,22 +204,10 @@ def get_valid_values(patterns : list[XrdPattern], attr : str) -> (list[str], lis
             values.append(v)
         except Exception as e:
             print(f'Could not extract attribute "{attr}" from pattern {pattern.get_name()}\n- Reason: {e}')
+
     if not values:
         raise ValueError(f'No data found for attribute {attr}')
-    values = [v for v in values if not v is None]
+    if any([v is None for v in values]):
+        raise ValueError(f'Attribute {attr} contains None values')
 
     return values
-
-def multiplot(patterns : list[XrdPattern], start_idx : int):
-    labels = [p.get_name() for p in patterns]
-    fig, axes = plt.subplots(4, 8, figsize=(20, 10))
-    for i, pattern in enumerate(patterns):
-        ax = axes[i // 8, i % 8]
-        x_values, intensities = pattern.get_pattern_data(apply_standardization=False)
-        ax.set_xlabel(r'$2\theta$ (Degrees)')
-        ax.plot(x_values, intensities, label='Interpolated Intensity')
-        ax.set_ylabel('Intensity')
-        ax.set_title(f'({i+start_idx}){labels[i][:20]}')
-        ax.legend(fontsize=8)
-    plt.tight_layout()
-    plt.show()

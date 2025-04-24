@@ -6,7 +6,6 @@ import zipfile
 import requests
 from xrdpattern.pattern import PatternDB
 
-from xrdpattern.pattern.db import patterdb_logger
 from opxrd.wrapper.tracked_int import TrackedInt
 
 
@@ -23,7 +22,6 @@ class OpXRD(PatternDB):
             cls._prepare_files(root_dirpath=dirpath, include_in_situ=download_in_situ)
 
         return super().load(dirpath=dirpath, strict=True)
-
 
     @classmethod
     def load_project_list(cls, root_dirpath : str, download : bool = True, download_in_situ : bool = False) -> list[PatternDB]:
@@ -72,8 +70,8 @@ class OpXRD(PatternDB):
         if not file_response.status_code == 200:
             raise ValueError(f'Response returned error status code {file_response.status_code}. Reason: {file_response.reason}')
 
-        patterdb_logger.info(f'Downloading opXRD database from Zenodo ({zenodo_url})')
-        patterdb_logger.info(f'Download chunk progress (Chunk size = 1kB):')
+        print(f'Downloading opXRD database from Zenodo ({zenodo_url})')
+        print(f'Download chunk progress (Chunk size = 1kB):')
         time.sleep(0.01)
         tracked_int = TrackedInt(start_value=0, finish_value=total_chunks)
         with open(output_fpath, 'wb') as f:
