@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+import copy
+import json
 import os
 import time
-from collections import Counter
 
 import numpy as np
 from matminer.featurizers.composition.composite import ElementProperty
 from matminer.featurizers.site.fingerprint import CrystalNNFingerprint
+from numpy._typing import NDArray
 from pymatgen.core import Species
-from pymatgen.core.composition import Composition
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
 from xrdpattern.crystal import CrystalStructure
@@ -61,6 +62,7 @@ class VAECrystal(object):
             self.invalid_reason = 'non_positive_lattice'
         else:
             try:
+
                 self.structure = Structure(
                     lattice=Lattice.from_parameters(*self.lengths, *self.angles),
                     species=self.atom_types, coords=self.frac_coords, coords_are_cartesian=False)
@@ -80,23 +82,67 @@ class VAECrystal(object):
         try:
             site_fps = [CrystalNNFP.featurize(self.structure, i) for i in range(len(self.structure))]
             print(f'- Finished fingerprint creation')
+            print(f'- Size of structure = {len(self.structure)}')
+            print(f'- Number of atoms: {len(self.structure.sites)}')
+
         except Exception as e:
             print(f'- CrystalNNFP failed:{e}')
             # counts crystal as invalid if fingerprint cannot be constructed.
             self.struct_fp = None
             return
-        self.struct_fp = np.array(site_fps).mean(axis=0)
+        self.struct_fp : NDArray = np.array(site_fps).mean(axis=0)
         print(f'time taken = {time.time()-start_time}')
+
+
+class FingerprintProcessor:
+    @staticmethod
+    def load_fingerprint_map(fpath : str) -> dict:
+        with open(fpath, 'r') as f:
+            content = f.read()
+            fingerprint = json.loads(content)
+            fingerprint['done'] = set(fingerprint['done'])
+
+            return fingerprint
+
+    @staticmethod
+    def save_fingerprint_map(fpath : str, state : dict):
+        with open(fpath, 'w') as f:
+            state['done'] = list(state['done'])
+            content = json.dumps(state)
+            f.write(content)
+
+    @staticmethod
+    def process_icsd_fingerprint(dirpath : str):
+        map_fname = 'map.txt'
+        if os.path.isfile(map_fname):
+            fingerprint_map = FingerprintProcessor.load_fingerprint_map(fpath=map_fname)
+        else:
+            fingerprint_map = {'done' : set()}
+
+        for fname in os.listdir(dirpath):
+            # if fname in fingerprint_map['done']:
+            #     print(f'- Skipping {fname} as already processed')
+            #     continue
+
+            fpath = os.path.join(dirpath, fname)
+            with open(fpath, 'r') as f:
+                content = f.read()
+                crystal_structure = CrystalStructure.from_cif(cif_content=content)
+
+            crystal = VAECrystal.from_custom_structure(crystal_structure)
+            fingerprint = crystal.struct_fp
+
+            if fingerprint is None:
+                continue
+
+            fingerprint_map[fname] = fingerprint.tolist()
+            fingerprint_map['done'].add(fname)
+
+            FingerprintProcessor.save_fingerprint_map(fpath=map_fname, state=copy.deepcopy(fingerprint_map))
+            print(f'- Successfully processed ICSD crystal')
 
 
 
 if __name__ == '__main__':
     icsd_dirpath = '/home/daniel/aimat/data/cif'
-    for j, fname in enumerate(os.listdir(icsd_dirpath)):
-        fpath = os.path.join(icsd_dirpath, fname)
-        with open(fpath, 'r') as f:
-            content = f.read()
-            crystal_structure = CrystalStructure.from_cif(cif_content=content)
-
-        crystal = VAECrystal.from_custom_structure(crystal_structure)
-        print(f'- Processed ICSD crystal No. {j}')
+    FingerprintProcessor.process_icsd_fingerprint(dirpath=icsd_dirpath)
