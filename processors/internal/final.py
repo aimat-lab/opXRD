@@ -105,7 +105,7 @@ class FinalProcessor:
             return
 
         for p in pattern_db.patterns:
-            if p.powder_experiment.is_labeled():
+            if p.is_labeled:
                 raise ValueError(f"Pattern {p.get_name()} is already labeled")
 
         data = pd.read_csv(csv_fpath, skiprows=1)

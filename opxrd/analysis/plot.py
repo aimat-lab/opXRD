@@ -8,12 +8,12 @@ from matplotlib import pyplot as plt
 from numpy.typing import NDArray
 from sklearn.decomposition import PCA
 
-from opxrd.analysis.tables import TableAnlysis
+from opxrd.analysis.tables import TableAnalyser
 from .visualization import AxesDefiner
 
 # -----------------------------------------
 
-class PlotAnalysis(TableAnlysis):
+class PlotAnalysis(TableAnalyser):
 
     def plot_in_single(self, limit_patterns: int):
         lower_alphabet = [chr(i) for i in range(97, 123)]
