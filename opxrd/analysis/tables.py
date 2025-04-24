@@ -46,7 +46,7 @@ class TableAnalyser:
 
         table_data.append(self.get_label_row(d=labeled_db))
         table_data.append(self.get_label_row(d=unlabeled_db))
-        row_headers += ['Labeled', 'Unlabeled']
+        row_headers += ['Σ Labeled', 'Σ Unlabeled']
 
         table = tabulate(table_data, headers=col_headers, showindex=row_headers, tablefmt='psql')
         print(table)
@@ -59,7 +59,7 @@ class TableAnalyser:
             for p in patterns:
                 if p.powder_experiment.has_label(label_type=l):
                     label_counts[l] += 1
-        return [len(d.patterns)] + [label_counts[l] / len(patterns) for l in LabelType.get_main_labels()]
+        return [len(d.patterns)] + [label_counts[l] / len(patterns) if len(patterns) > 0 else '#' for l in LabelType.get_main_labels()]
 
 
     @staticmethod
