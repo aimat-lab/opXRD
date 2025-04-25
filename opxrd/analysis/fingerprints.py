@@ -218,7 +218,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     map_fpath = "./fingerprint_map.txt"
-    save_every = 100
+    save_every = 1000
 
     FingerprintProcessor.process_icsd_fingerprints(
         dirpath=args.icsd_dirpath,
