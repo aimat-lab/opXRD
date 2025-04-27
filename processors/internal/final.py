@@ -80,25 +80,6 @@ class FinalProcessor:
 
 
     @staticmethod
-    def attach_cif_labels(pattern_db : PatternDB):
-        for fpath, patterns in pattern_db.fpath_dict.items():
-            dirpath = os.path.dirname(fpath)
-            cif_fnames = [fname for fname in os.listdir(dirpath) if PathTools.get_suffix(fname) == 'cif']
-
-            phases = []
-            for fname in cif_fnames:
-                cif_fpath = os.path.join(dirpath, fname)
-                attached_cif_content = FinalProcessor.read_file(fpath=cif_fpath)
-                crystal_phase = FinalProcessor.safe_cif_read(cif_content=attached_cif_content)
-                phases.append(crystal_phase)
-
-            phases = [p for p in phases if not p is None]
-            powder_experiment = PowderExperiment.from_multi_phase(phases=phases)
-            for p in patterns:
-                p.powder_experiment = powder_experiment
-
-
-    @staticmethod
     def attach_csv_labels(pattern_db : PatternDB, contrib_dirpath : str):
         csv_fpath = os.path.join(contrib_dirpath, 'labels.csv')
 
@@ -133,14 +114,6 @@ class FinalProcessor:
         with open(fpath, 'r') as file:
             cif_content = file.read()
         return cif_content
-
-    @staticmethod
-    def safe_cif_read(cif_content: str) -> Optional[CrystalStructure]:
-        try:
-            extracted_phase = CrystalStructure.from_cif(cif_content)
-        except:
-            extracted_phase = None
-        return extracted_phase
 
     def get_final_dirpath(self, *path_elements : str):
         return os.path.join(self.final_dirpath, *path_elements)
