@@ -37,7 +37,7 @@ class FinalProcessor:
             print(f'+--------------------------------------+\n')
 
     def get_csv_db(self, dirname: str, orientation : str, suffixes: Optional[list[str]] = None) -> PatternDB:
-        return self.get_db(dirname=dirname, csv_orientation=orientation, suffixes=suffixes, strict=True)
+        return self.get_db(dirname=dirname, csv_orientation=orientation, suffixes=suffixes)
 
     def get_db(self, dirname: str,
                suffixes : Optional[list[str]] = None,
@@ -55,6 +55,8 @@ class FinalProcessor:
             pattern_db.set_xray(xray_info=xray_info)
         for p in pattern_db.patterns:
             p.metadata.remove_filename()
+            standardized_phases = [phase.get_standardized() for phase in p.powder_experiment.phases]
+            p.powder_experiment.phases = standardized_phases
         print(f'Finished processing contribution {dirname}')
 
         return pattern_db
