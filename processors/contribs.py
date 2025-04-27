@@ -99,4 +99,4 @@ class ContributionProcessor(FinalProcessor):
 
 if __name__ == "__main__":
     processor = ContributionProcessor(root_dirpath='/media/daniel/mirrors/xrd.aimat.science/local')
-    processor.parse_EMPA()
+    processor.parse_all()

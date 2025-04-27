@@ -38,7 +38,7 @@ def retrieve_cod_data(json_fpath : str, out_dirpath : str):
 
             x, y = data_dict['x'], data_dict['y']
             lattice = Lattice.from_parameters(a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma)
-            phase = CrystalStructure(lattice=lattice, spacegroup=spg_num, basis=CrystalBasis.empty())
+            phase = CrystalStructure(lattice=lattice, spacegroup=spg_num, basis=None)
             powder_experiment = PowderExperiment.from_single_phase(phase=phase)
             try:
                 pattern = XrdPattern(two_theta_values=np.array(x), intensities=np.array(y), powder_experiment=powder_experiment)

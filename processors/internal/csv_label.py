@@ -17,12 +17,26 @@ class CsvLabel:
     phase_fraction : float
     spacegroup : int
 
-    def set_phase_properties(self, phase : CrystalStructure):
+    @staticmethod
+    def is_numerical(obj):
+        try:
+            obj = float(obj)
+            return obj == obj
+        except:
+            return False
+
+    def set_properties(self, phase : CrystalStructure):
         phase.spacegroup = self.spacegroup
 
-        phase.lattice = Lattice.from_parameters(*self.lengths, *self.angles)
+        params = *self.lengths, *self.angles
+        if all([self.is_numerical(p) for p in params]):
+            lattice = Lattice.from_parameters(*params)
+        else:
+            lattice = None
+
+        phase.lattice = lattice
         phase.chemical_composition = self.chemical_composition
-        phase.phase_fraction = self.phase_fraction
+        phase.phase_fraction = self.phase_fraction/100 if self.is_numerical(self.phase_fraction) else None
 
 
 def get_powder_experiment(pattern_fpath : str, pattern_dirpath : str, phases) -> PowderExperiment:
@@ -32,11 +46,13 @@ def get_powder_experiment(pattern_fpath : str, pattern_dirpath : str, phases) ->
 
     for phase_num, csv_label_dict in enumerate(phases):
         csv_label = csv_label_dict.get(rel_path)
-        if not csv_label is None:
-            csv_label.set_phase_properties(phase=powder_experiment.phases[phase_num])
-        else:
+        if csv_label is None:
             print(f'Warning: File "{rel_path}" not found in labels.csv {os.path.basename(pattern_dirpath)}')
-            pass
+            continue
+
+        phase = CrystalStructure.make_empty()
+        csv_label.set_properties(phase)
+        powder_experiment.phases.append(phase)
 
     return powder_experiment
 
