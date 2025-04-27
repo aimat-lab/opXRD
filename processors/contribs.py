@@ -99,5 +99,4 @@ class ContributionProcessor(FinalProcessor):
 
 if __name__ == "__main__":
     processor = ContributionProcessor(root_dirpath='/media/daniel/mirrors/xrd.aimat.science/local')
-    xray_info = XrayInfo(primary_wavelength=1.23984, secondary_wavelength=None)
-    processor._parse_LBNL_B(xray_info=xray_info)
+    processor.parse_all()
