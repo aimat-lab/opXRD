@@ -4,13 +4,11 @@ from logging import Logger
 from typing import Optional
 
 import pandas as pd
-from xrdpattern.crystal import CrystalStructure
-from xrdpattern.parsing.path_tools import PathTools
-from xrdpattern.pattern import PatternDB
-from xrdpattern.xrd import PowderExperiment, XrayInfo
 
 from processors.internal.csv_label import get_powder_experiment, get_label_mapping
 from processors.internal.methods import ModuleInspector
+from xrdpattern.pattern import PatternDB
+from xrdpattern.xrd import XrayInfo
 
 
 # -------------------------------------------
@@ -46,7 +44,7 @@ class FinalProcessor:
                strict : bool = False) -> PatternDB:
         print(f'Started processing contribution {dirname}')
         contrib_dirpath = os.path.join(self.prepared_dirpath, dirname)
-        contrib_data = os.path.join(self.prepared_dirpath, dirname, 'ready')
+        contrib_data = self.get_pattern_dirpath(contrib_dirpath=contrib_dirpath)
         pattern_db = PatternDB.load(dirpath=contrib_data, suffixes=suffixes, csv_orientation=csv_orientation, strict=strict)
 
         self.attach_metadata(pattern_db, dirname=dirname)
@@ -79,8 +77,7 @@ class FinalProcessor:
             p.metadata.institution = form_data["contributing_institution"]
 
 
-    @staticmethod
-    def attach_csv_labels(pattern_db : PatternDB, contrib_dirpath : str):
+    def attach_csv_labels(self, pattern_db : PatternDB, contrib_dirpath : str):
         csv_fpath = os.path.join(contrib_dirpath, 'labels.csv')
 
         if not os.path.isfile(csv_fpath):
@@ -94,7 +91,9 @@ class FinalProcessor:
         data = pd.read_csv(csv_fpath, skiprows=1)
         phases = [get_label_mapping(data=data, phase_num=num) for num in range(2)]
         for pattern_fpath, file_patterns in pattern_db.fpath_dict.items():
-            powder_experiment = get_powder_experiment(pattern_fpath=pattern_fpath, contrib_dirpath=contrib_dirpath, phases=phases)
+            powder_experiment = get_powder_experiment(pattern_fpath=pattern_fpath,
+                                                      pattern_dirpath=self.get_pattern_dirpath(contrib_dirpath=contrib_dirpath),
+                                                      phases=phases)
 
             for p in file_patterns:
                 p.powder_experiment = powder_experiment
@@ -108,6 +107,10 @@ class FinalProcessor:
 
     # -----------------------------
     # Helper methods
+
+    @staticmethod
+    def get_pattern_dirpath(contrib_dirpath : str):
+        return os.path.join(contrib_dirpath, 'ready')
 
     @staticmethod
     def read_file(fpath: str) -> str:

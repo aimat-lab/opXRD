@@ -25,11 +25,9 @@ class CsvLabel:
         phase.phase_fraction = self.phase_fraction
 
 
-def get_powder_experiment(pattern_fpath : str, contrib_dirpath : str, phases) -> PowderExperiment:
-    data_dirpath = os.path.join(contrib_dirpath, 'data')
-
+def get_powder_experiment(pattern_fpath : str, pattern_dirpath : str, phases) -> PowderExperiment:
     powder_experiment = PowderExperiment.make_empty()
-    rel_path = os.path.relpath(pattern_fpath, start=data_dirpath)
+    rel_path = os.path.relpath(pattern_fpath, start=pattern_dirpath)
     rel_path = standardize_path(rel_path)
 
     for phase_num, csv_label_dict in enumerate(phases):
@@ -37,7 +35,7 @@ def get_powder_experiment(pattern_fpath : str, contrib_dirpath : str, phases) ->
         if not csv_label is None:
             csv_label.set_phase_properties(phase=powder_experiment.phases[phase_num])
         else:
-            # print(f'Unlabeled pattern {rel_path} in contribution {os.path.basename(contrib_dirpath)}')
+            print(f'Warning: File "{rel_path}" not found in labels.csv {os.path.basename(pattern_dirpath)}')
             pass
 
     return powder_experiment
