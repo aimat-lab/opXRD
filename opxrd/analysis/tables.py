@@ -53,14 +53,16 @@ class TableAnalyser:
         col_headers = ['No. patterns'] +  [label.name for label in LabelType.get_main_labels()]
         row_headers = [db.name for db in self.databases]
 
+        fully_labeled_db = PatternDB(patterns=self.fully_labeled, fpath_dict={})
         labeled_db = PatternDB(patterns=self.labeled, fpath_dict={})
         unlabeled_db = PatternDB(patterns=self.unlabeled, fpath_dict={})
         total_db = PatternDB(patterns=self.patterns, fpath_dict={})
 
+        table_data.append(self.get_label_row(d=fully_labeled_db))
         table_data.append(self.get_label_row(d=labeled_db))
         table_data.append(self.get_label_row(d=unlabeled_db))
         table_data.append(self.get_label_row(d=total_db))
-        row_headers += ['Σ Labeled', 'Σ Unlabeled', 'Σ Total']
+        row_headers += ['Σ Fully labeled', 'Σ Labeled', 'Σ Unlabeled', 'Σ Total']
 
         table = tabulate(table_data, headers=col_headers, showindex=row_headers, tablefmt='psql')
         print(table)
