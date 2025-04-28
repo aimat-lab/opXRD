@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.ticker import MaxNLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from pymatgen.core import Composition
 
 from xrdpattern.crystal.spgs import SpacegroupConverter
 from xrdpattern.pattern import XrdPattern
@@ -42,12 +43,10 @@ class AxesDefiner:
         element_symbols = set([el.symbol for el in Element])
 
         for p in other:
+            compositions = [ph.chemical_composition for ph in p.powder_experiment.phases if not ph.chemical_composition is None]
+            joined_comp = ''.join(compositions)
             for element in element_symbols:
-                for phase in p.powder_experiment.phases:
-                    if not phase.chemical_composition:
-                        continue
-                    if element in phase.chemical_composition:
-                        element_map[element] += 1
+                element_map[element] += int(element in joined_comp)
 
         keys, counts = list(element_map.keys()), list(element_map.values())
         zipped = zip(keys, counts)
