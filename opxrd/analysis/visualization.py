@@ -9,6 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from xrdpattern.crystal.spgs import SpacegroupConverter
 from xrdpattern.pattern import XrdPattern
+from xrdpattern.xrd import LabelType
 
 
 # -----------------------------------------
@@ -17,7 +18,16 @@ class AxesDefiner:
     @staticmethod
     def define_elements_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
         element_map = defaultdict(int)
+        basis_labeled = []
+        other = []
+
         for p in patterns:
+            if p.has_label(label_type=LabelType.basis):
+                basis_labeled.append(p)
+            else:
+                other.append(p)
+
+        for p in basis_labeled:
             if p.primary_phase is None:
                 raise ValueError(f'Pattern {p.get_name()} has no primary phase')
             if p.primary_phase.num_atoms == 0:
@@ -28,8 +38,18 @@ class AxesDefiner:
                 element = element.symbol
                 element_map[element] += 1
 
-        keys, counts = list(element_map.keys()), list(element_map.values())
+        from pymatgen.core.periodic_table import Element
+        element_symbols = set([el.symbol for el in Element])
 
+        for p in other:
+            for element in element_symbols:
+                for phase in p.powder_experiment.phases:
+                    if not phase.chemical_composition:
+                        continue
+                    if element in phase.chemical_composition:
+                        element_map[element] += 1
+
+        keys, counts = list(element_map.keys()), list(element_map.values())
         zipped = zip(keys, counts)
         sorted_zipped = sorted(zipped, key=lambda x : -x[1])
         keys, counts = [], []
@@ -73,8 +93,6 @@ class AxesDefiner:
                 order = 'BIG'
             order_counts_map[order] += c
 
-        # print(keys)
-        # print(counts)
         volume_str = r'V_{\text{uc}}'
         labels = [f'${volume_str} \\leq 10^2 \\AA^3 $',
                   f'$10^2 \\AA^3 < {volume_str} \\leq 10^3 \\AA^3$',

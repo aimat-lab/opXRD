@@ -26,9 +26,8 @@ class TableAnalyser:
         self.lattice_labeled : list[XrdPattern] = []
         self.fully_labeled : list[XrdPattern] = []
 
-
         for p in self.patterns:
-            if p.is_labeled:
+            if p.is_partially_labeled:
                 self.labeled.append(p)
                 if p.has_label(label_type=LabelType.basis):
                     self.fully_labeled.append(p)
@@ -56,10 +55,12 @@ class TableAnalyser:
 
         labeled_db = PatternDB(patterns=self.labeled, fpath_dict={})
         unlabeled_db = PatternDB(patterns=self.unlabeled, fpath_dict={})
+        total_db = PatternDB(patterns=self.patterns, fpath_dict={})
 
         table_data.append(self.get_label_row(d=labeled_db))
         table_data.append(self.get_label_row(d=unlabeled_db))
-        row_headers += ['Σ Labeled', 'Σ Unlabeled']
+        table_data.append(self.get_label_row(d=total_db))
+        row_headers += ['Σ Labeled', 'Σ Unlabeled', 'Σ Total']
 
         table = tabulate(table_data, headers=col_headers, showindex=row_headers, tablefmt='psql')
         print(table)
@@ -72,7 +73,7 @@ class TableAnalyser:
             for p in patterns:
                 if p.has_label(label_type=l):
                     label_counts[l] += 1
-        return [len(d.patterns)] + [label_counts[l] / len(patterns) if len(patterns) > 0 else '#' for l in LabelType.get_main_labels()]
+        return [len(d.patterns)] + [round(100*label_counts[l] / len(patterns)) if len(patterns) > 0 else '#' for l in LabelType.get_main_labels()]
 
 
     @staticmethod

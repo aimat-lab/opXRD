@@ -85,7 +85,7 @@ class FinalProcessor:
             return
 
         for p in pattern_db.patterns:
-            if p.is_labeled:
+            if p.is_partially_labeled:
                 raise ValueError(f"Pattern {p.get_name()} is already labeled")
 
         data = pd.read_csv(csv_fpath, skiprows=1)
