@@ -168,13 +168,14 @@ class PlotAnalysis(TableAnalyser):
             ax.set_ylabel(r'Cumulative explained variance ratio')
 
         plt.tight_layout()
-        figname = 'component_fractions.png' if use_fractions else 'components.png'
-        plt.savefig(os.path.join(self.output_dirpath,figname))
+        if self.output_dirpath:
+            figname = 'component_fractions.png' if use_fractions else 'components.png'
+            plt.savefig(os.path.join(self.output_dirpath,figname))
         plt.show()
 
-    def xrd_histogram(self, save_fpath: Optional[str] = None, attach_colorbar: bool = False):
+    def xrd_histogram(self, attach_colorbar: bool = False):
 
-        fig = plt.figure(figsize=(12, 4))
+        fig = plt.figure(figsize=(12, 4), dpi=400)
 
         grid = gridspec.GridSpec(nrows=1, ncols=2, figure=fig, hspace=0.35)
         ax3 = fig.add_subplot(grid[:, 0])
@@ -198,12 +199,13 @@ class PlotAnalysis(TableAnalyser):
         AxesDefiner.define_angle_start_stop_ax(patterns=self.patterns, density_ax=ax4, top_marginal=ax5, right_marginal=ax6,
                                    cmap_ax=ax7, attach_colorbar=attach_colorbar)
 
-        if save_fpath:
+        if self.output_dirpath:
+            save_fpath = os.path.join(self.output_dirpath, 'hist_XRD.png')
             plt.savefig(save_fpath)
         plt.show()
 
-    def structure_histogram(self, save_fpath: Optional[str] = None):
-        fig = plt.figure(figsize=(12, 11))
+    def structure_histogram(self):
+        fig = plt.figure(figsize=(12, 11),dpi=400)
 
         grid = gridspec.GridSpec(nrows=4, ncols=2, figure=fig, hspace=0.5)
         grid.update(top=0.96, bottom=0.075)
@@ -218,7 +220,8 @@ class PlotAnalysis(TableAnalyser):
         AxesDefiner.define_spg_ax(patterns=spg_patterns, ax=ax2, letter='b')
         AxesDefiner.define_volume_ax(patterns=self.lattice_labeled, ax=ax4, letter='d')
 
-        if save_fpath:
+        if self.output_dirpath:
+            save_fpath = os.path.join(self.output_dirpath, 'hist_CRYSTAL.png')
             plt.savefig(save_fpath)
         plt.show()
 
