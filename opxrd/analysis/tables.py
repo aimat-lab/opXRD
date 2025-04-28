@@ -5,6 +5,7 @@ from IPython.core.display import Markdown
 from IPython.core.display_functions import display
 from tabulate import tabulate
 
+from opxrd import OpXRD
 from xrdpattern.pattern import PatternDB, XrdPattern
 from xrdpattern.xrd import LabelType
 
@@ -25,9 +26,6 @@ class TableAnalyser:
         self.lattice_labeled : list[XrdPattern] = []
         self.fully_labeled : list[XrdPattern] = []
 
-        for p in self.fully_labeled:
-            for phase in p.powder_experiment.phases:
-                phase.calculate_properties()
 
         for p in self.patterns:
             if p.is_labeled:
@@ -39,6 +37,9 @@ class TableAnalyser:
             else:
                 self.unlabeled.append(p)
 
+        for p in self.fully_labeled:
+            for phase in p.powder_experiment.phases:
+                phase.calculate_properties()
 
         os.makedirs(self.output_dirpath, exist_ok=True)
         random.seed(42)
@@ -80,3 +81,14 @@ class TableAnalyser:
             display(Markdown(msg))
         except:
             print(msg)
+
+
+if __name__ == "__main__":
+    t1 = '/media/daniel/mirrors/xrd.aimat.science/local/final/CNRS'
+    t2 = '/media/daniel/mirrors/xrd.aimat.science/local/final/EMPA'
+    full_dirpath = '/media/daniel/mirrors/xrd.aimat.science/local/final'
+    is_full_run = False
+
+    d1 = OpXRD.load(dirpath=t1)
+    analyser = TableAnalyser(databases=[d1], output_dirpath='/tmp/asdf')
+    print('done1')
