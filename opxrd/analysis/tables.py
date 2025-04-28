@@ -22,13 +22,20 @@ class TableAnalyser:
 
         self.unlabeled : list[XrdPattern] = []
         self.labeled : list[XrdPattern] = []
+        self.lattice_labeled : list[XrdPattern] = []
         self.fully_labeled : list[XrdPattern] = []
+
+        for p in self.fully_labeled:
+            for phase in p.powder_experiment.phases:
+                phase.calculate_properties()
 
         for p in self.patterns:
             if p.is_labeled:
                 self.labeled.append(p)
                 if p.has_label(label_type=LabelType.basis):
                     self.fully_labeled.append(p)
+                if p.has_label(label_type=LabelType.lattice):
+                    self.lattice_labeled.append(p)
             else:
                 self.unlabeled.append(p)
 

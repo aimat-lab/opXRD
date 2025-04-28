@@ -6,7 +6,7 @@ import numpy as np
 import requests
 from pymatgen.core import Lattice
 
-from xrdpattern.crystal import CrystalStructure, CrystalBasis
+from xrdpattern.crystal import CrystalStructure
 from xrdpattern.pattern import XrdPattern
 from xrdpattern.xrd import PowderExperiment
 
@@ -71,7 +71,7 @@ def parse_cod_cif(num : int) -> XrdPattern:
     with open(temp_fpath, 'w') as f:
         f.write(cif_content)
 
-    return XrdPattern.load(fpath=temp_fpath, mute=True)
+    return XrdPattern.load(fpath=temp_fpath)
 
 if __name__ == "__main__":
     extracted_fpath = '/media/daniel/mirrors/xrd.aimat.science/local/prepared/coudert_hardiagon_0/original/extracted_data.json'

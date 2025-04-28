@@ -216,7 +216,7 @@ class PlotAnalysis(TableAnalyser):
         AxesDefiner.define_elements_ax(patterns=self.fully_labeled, ax=ax1, letter='a')
         AxesDefiner.define_no_atoms_ax(patterns=self.fully_labeled, ax=ax3, letter='c')
         AxesDefiner.define_spg_ax(patterns=spg_patterns, ax=ax2, letter='b')
-        AxesDefiner.define_volume_ax(patterns=self.labeled, ax=ax4, letter='d')
+        AxesDefiner.define_volume_ax(patterns=self.lattice_labeled, ax=ax4, letter='d')
 
         if save_fpath:
             plt.savefig(save_fpath)
