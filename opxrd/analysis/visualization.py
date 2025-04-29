@@ -78,24 +78,26 @@ class AxesDefiner:
     def define_volume_ax(patterns : list[XrdPattern], ax : Axes, letter : str):
         keys, counts = get_keys_counts(patterns=patterns, attr='primary_phase.volume_uc')
 
-        order_counts_map = {'100' : 0, '1000' : 0, '10000' : 0,  'BIG' : 0}
+        basis = 2
+        exponent_range = range(6,16)
+        order_counts_map = {i : 0 for i in exponent_range}
+        forgotten_counts = 0
+
         for k, c in zip(keys, counts):
             k = int(k)
-            if k <= 100:
-                order = '100'
-            elif k <= 1000:
-                order = '1000'
-            elif k <= 10**4:
-                order = '10000'
-            else:
-                order = 'BIG'
-            order_counts_map[order] += c
+            exponent = 1
+            while basis**exponent < k:
+                exponent += 1
+            try:
+                order_counts_map[exponent] += c
+            except:
+                forgotten_counts += c
+        print(forgotten_counts)
 
-        volume_str = r'V_{\text{uc}}'
-        labels = [f'${volume_str} \\leq 10^2 \\AA^3 $',
-                  f'$10^2 \\AA^3 < {volume_str} \\leq 10^3 \\AA^3$',
-                  f'$10^3 \\AA^3 < {volume_str} \\leq 10^4 \\AA^3$',
-                  f'${volume_str} > 10^4 \\AA^3$']
+        labels = []
+        for j in exponent_range:
+            labels.append(f'$\\leq {basis}^{{{j}}} \\AA$')
+
         counts = list(order_counts_map.values())
         ax.bar(labels, counts)
         ax.tick_params(labelbottom=True, labelleft=True)  # Enable labels
