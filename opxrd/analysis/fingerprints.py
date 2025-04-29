@@ -1,11 +1,11 @@
 from __future__ import annotations
-import warnings
+
+import argparse
 import copy
-from tqdm import tqdm
 import json
 import os
-import time
-import argparse
+import warnings
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Optional
 
 import numpy as np
@@ -15,8 +15,9 @@ from numpy.typing import NDArray
 from pymatgen.core import Species
 from pymatgen.core.lattice import Lattice
 from pymatgen.core.structure import Structure
+from tqdm import tqdm
+
 from xrdpattern.crystal import CrystalStructure
-from concurrent.futures import ProcessPoolExecutor, as_completed
 
 # --------------------------------------------------------------------------
 

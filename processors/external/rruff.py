@@ -81,7 +81,7 @@ if __name__ == "__main__":
             a,b,c,alpha, beta, gamma = labels.lattice_parameters
             lattice = Lattice.from_parameters(a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma)
 
-            crystal_structure = CrystalStructure(lattice=lattice, basis=CrystalBasis.empty(), spacegroup=spacegroup)
+            crystal_structure = CrystalStructure(lattice=lattice, basis=None, spacegroup=spacegroup)
             artifacts = XrayInfo(primary_wavelength=labels.wavelength, secondary_wavelength=copper_wavelength)
             pattern.powder_experiment = PowderExperiment(phases=[crystal_structure], xray_info=artifacts, is_simulated=False)
             pattern.save(fpath=os.path.join(output_dirpath, base_name))

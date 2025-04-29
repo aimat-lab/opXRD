@@ -14,19 +14,19 @@ from opxrd.wrapper.tracked_int import TrackedInt
 
 class OpXRD(PatternDB):
     @classmethod
-    def load(cls, dirpath : str, download : bool = True, download_in_situ : bool = False, *args, **kwargs) -> PatternDB:
+    def load(cls, dirpath : str, download : bool = True, *args, **kwargs) -> PatternDB:
         dirpath = os.path.expanduser(dirpath)
         dirpath = os.path.abspath(dirpath)
 
         if not os.path.isdir(dirpath) and download:
-            cls._prepare_files(root_dirpath=dirpath, include_in_situ=download_in_situ)
+            cls._prepare_files(root_dirpath=dirpath)
 
         return super().load(dirpath=dirpath, strict=True)
 
     @classmethod
-    def load_project_list(cls, root_dirpath : str, download : bool = True, download_in_situ : bool = False) -> list[PatternDB]:
+    def load_project_list(cls, root_dirpath : str, download : bool = True) -> list[PatternDB]:
         if not os.path.isdir(root_dirpath) and download:
-            cls._prepare_files(root_dirpath=root_dirpath, include_in_situ=download_in_situ)
+            cls._prepare_files(root_dirpath=root_dirpath)
 
         pattern_dbs = []
         print(f'- Loading databases from {root_dirpath}')
@@ -47,14 +47,10 @@ class OpXRD(PatternDB):
         return pattern_dbs
 
     @classmethod
-    def _prepare_files(cls, root_dirpath : str, include_in_situ : bool = False):
+    def _prepare_files(cls, root_dirpath : str):
         tmp_fpath = tempfile.mktemp(suffix='.zip')
         OpXRD._download_zenodo_opxrd(output_fpath=tmp_fpath)
         OpXRD._unzip_file(tmp_fpath, output_dir=root_dirpath)
-        if include_in_situ:
-            cls._download_zenodo_opxrd(output_fpath=tmp_fpath, filename='opxrd_in_situ.zip')
-            cls._unzip_file(tmp_fpath, output_dir=root_dirpath)
-
 
     @classmethod
     def _download_zenodo_opxrd(cls, output_fpath : str, filename : str = 'opxrd.zip'):
