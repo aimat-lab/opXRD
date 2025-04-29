@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = [{name = "Daniel Hollarek", email = "daniel.hollarek@googlemail.com"}]
 description = "Python API for opXRD database. See more at https://xrd.aimat.science/"
 dependencies = [
-    "xrdpattern==0.9.7",
+    "xrdpattern==0.9.8",
     "scikit-learn==1.6.1",
     "numpy==1.26.4",
     "requests==2.32.3",
