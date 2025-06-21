@@ -1,3 +1,4 @@
+from __future__ import annotations
 import os.path
 import tempfile
 import time
@@ -14,7 +15,7 @@ from opxrd.wrapper.tracked_int import TrackedInt
 
 class OpXRD(PatternDB):
     @classmethod
-    def load(cls, dirpath : str, download : bool = True, *args, **kwargs) -> PatternDB:
+    def load(cls, dirpath : str, download : bool = True, *args, **kwargs) -> OpXRD:
         dirpath = os.path.expanduser(dirpath)
         dirpath = os.path.abspath(dirpath)
 
